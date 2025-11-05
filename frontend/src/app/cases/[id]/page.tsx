@@ -13,9 +13,9 @@ type Entity = {
 export default function CasePage() {
   const { id } = useParams<{ id: string }>();
   const [entities, setEntities] = useState<Entity[]>([]);
+  const [textPreview, setTextPreview] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [textPreview, setTextPreview] = useState<string>("");
 
   const fetchAnalysis = async () => {
     try {
@@ -27,7 +27,7 @@ export default function CasePage() {
       setTextPreview(res.data.text_preview || "");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to analyze evidence");
+      setError(err.message || "Failed to fetch analysis");
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function CasePage() {
           </div>
 
           {entities.length === 0 ? (
-            <p>No entities detected in this evidence.</p>
+            <p>No entities detected.</p>
           ) : (
             <table className="w-full border border-gray-300 text-sm">
               <thead className="bg-gray-100">
@@ -68,11 +68,13 @@ export default function CasePage() {
                 </tr>
               </thead>
               <tbody>
-                {entities.map((e, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
+                {entities.map((e, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
                     <td className="border p-2 font-medium">{e.kind}</td>
                     <td className="border p-2">{e.value}</td>
-                    <td className="border p-2 text-right">{Math.round(e.confidence * 100)}%</td>
+                    <td className="border p-2 text-right">
+                      {(e.confidence * 100).toFixed(1)}%
+                    </td>
                   </tr>
                 ))}
               </tbody>
