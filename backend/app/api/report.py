@@ -1,101 +1,62 @@
-# from fastapi import APIRouter, Form
-# import os
-# from app.pipelines.ocr import extract_text_from_image
-# from app.pipelines.regex_extract import extract_entities
-# from app.pipelines.ner import extract_named_entities
-# from app.pipelines.risk_assessor import calculate_risk
-# from app.pipelines.osint_engine import enrich_entity_osint
-# from app.pipelines.report_generator import generate_pdf_report
-
-# router = APIRouter()
-
-# UPLOAD_DIR = "app/data/uploads"
-
-# @router.post("/report")
-# def generate_report(file_id: str = Form(...)):
-#     file_path = os.path.join(UPLOAD_DIR, file_id)
-
-#     if not os.path.exists(file_path):
-#         return {"error": "File not found", "file_id": file_id}
-
-#     # ✅ 1. Re-run OCR + extraction
-#     raw_text = extract_text_from_image(file_path)
-#     regex_hits = extract_entities(raw_text)
-#     ner_hits = extract_named_entities(raw_text)
-#     all_entities = regex_hits + ner_hits
-
-#     # ✅ 2. Risk
-#     risk_report = [calculate_risk(e) for e in all_entities]
-
-#     # ✅ 3. OSINT
-#     threat_intel = [enrich_entity_osint(e) for e in all_entities]
-
-#     # ✅ 4. Generate PDF (returns bytes)
-#     pdf_bytes = generate_pdf_report(
-#         raw_text=raw_text,
-#         entities=all_entities,
-#         risk_report=risk_report,
-#         threat_intel=threat_intel
-#     )
-
-#     # ✅ 5. Return PDF correctly
-#     return pdf_bytes
-
-
+# app/api/report.py
 from fastapi import APIRouter, Form, HTTPException
-from fastapi.responses import StreamingResponse
-from io import BytesIO
-import os
-
-from app.pipelines.ocr import extract_text_from_image
-from app.pipelines.regex_extract import extract_entities
-from app.pipelines.ner import extract_named_entities
-from app.pipelines.risk_assessor import calculate_risk
-from app.pipelines.osint_engine import enrich_entity_osint
+from fastapi.responses import FileResponse
+import os, json
+from datetime import datetime
 from app.pipelines.report_generator import generate_pdf_report
+from app.services.chainlog import chain_log
 
 router = APIRouter()
 
-UPLOAD_DIR = "app/data/uploads"
+CACHE_DIR = "app/data/analysis_cache"
+REPORT_DIR = "app/data/reports"
+os.makedirs(REPORT_DIR, exist_ok=True)
 
 
 @router.post("/report")
 def generate_report(file_id: str = Form(...)):
-    file_path = os.path.join(UPLOAD_DIR, file_id)
+    """
+    Generates a detailed forensic PDF report using cached analysis results.
+    Integrates all intelligence layers: OCR, Entities, Scam Classifier, OSINT, Risk, and QR/URL findings.
+    """
+    cache_path = os.path.join(CACHE_DIR, f"{file_id}.json")
+    if not os.path.exists(cache_path):
+        raise HTTPException(status_code=404, detail=f"Cached analysis not found for file_id: {file_id}")
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
+    with open(cache_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-    # ✅ 1. OCR
-    raw_text = extract_text_from_image(file_path)
-
-    # ✅ 2. Entity extraction
-    regex_hits = extract_entities(raw_text)
-    ner_hits = extract_named_entities(raw_text)
-    all_entities = regex_hits + ner_hits
-
-    # ✅ 3. Risk scoring
-    risk_report = [calculate_risk(e) for e in all_entities]
-
-    # ✅ 4. OSINT enrichment
-    threat_intel = [enrich_entity_osint(e) for e in all_entities]
-
-    # ✅ 5. Generate PDF bytes
-    pdf_bytes = generate_pdf_report(
-        raw_text=raw_text,
-        entities=all_entities,
-        risk_report=risk_report,
-        threat_intel=threat_intel
+    # 🧠 Pass all collected intelligence to report generator
+    pdf_info = generate_pdf_report(
+        file_id=file_id,
+        raw_text=data.get("raw_text", ""),
+        entities=data.get("entities", []),
+        risk_report=data.get("risk", {}),
+        threat_intel=data.get("osint_hits", []),
+        scam_class=data.get("scam_class", {}),
+        url_qr_findings=data.get("url_qr_findings", []),
     )
 
-    # ✅ 6. Convert to stream for FastAPI
-    pdf_stream = BytesIO(pdf_bytes)
+    pdf_path = pdf_info.get("pdf_path")
+    if not pdf_path or not os.path.exists(pdf_path):
+        raise HTTPException(status_code=500, detail="Report generation failed — no file created")
 
-    # ✅ 7. Return proper PDF response
-    return StreamingResponse(
-        pdf_stream,
+    # 🧾 Log chain of custody entry
+    chain_log(
+        action="GENERATE_REPORT",
+        actor="system",
+        target=file_id,
+        meta={
+            "pdf_path": pdf_path,
+            "timestamp": datetime.now().isoformat(),
+            "entities": len(data.get("entities", [])),
+            "risk_level": data.get("risk", {}).get("risk_level"),
+        },
+    )
+
+    # ✅ Return downloadable file
+    return FileResponse(
+        pdf_path,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": "attachment; filename=cyberlens_report.pdf"
-        }
+        filename=os.path.basename(pdf_path),
     )

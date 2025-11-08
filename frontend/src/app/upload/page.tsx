@@ -1,26 +1,28 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import EvidenceUploader from "@/components/EvidenceUploader";
+import Link from "next/link";
 
 export default function UploadPage() {
-  const [uploaded, setUploaded] = useState<any | null>(null);
+  const [fileData, setFileData] = useState<any | null>(null);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Upload Digital Evidence</h1>
-      <EvidenceUploader onUploaded={(res) => setUploaded(res)} />
-      {uploaded && (
-        <div className="mt-6 p-4 border rounded bg-gray-50">
-          <h2 className="font-semibold mb-2">Uploaded File Info</h2>
-          <div className="text-sm">Filename: {uploaded.filename}</div>
-          <div className="text-sm">SHA256: {uploaded.sha256}</div>
-          <div className="text-sm">File ID: {uploaded.file_id}</div>
-          <a
-            href={`/cases/${uploaded.file_id}`}
-            className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded"
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">Upload Evidence</h1>
+      <EvidenceUploader onUpload={setFileData} />
+
+      {fileData && (
+        <div className="bg-white p-4 rounded shadow mt-6">
+          <h2 className="text-lg font-semibold mb-2">Upload Details</h2>
+          <p><b>File ID:</b> {fileData.file_id}</p>
+          <p><b>SHA256:</b> {fileData.sha256}</p>
+
+          <Link
+            href={`/cases/${fileData.file_id}`}
+            className="inline-block mt-4 bg-blue-700 text-white px-4 py-2 rounded"
           >
-            View Analysis →
-          </a>
+            Analyze →
+          </Link>
         </div>
       )}
     </div>
