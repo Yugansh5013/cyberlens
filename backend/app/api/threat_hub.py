@@ -1,8 +1,11 @@
 # app/api/threat_hub.py
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, UploadFile, File, Form
 import os, json
 from collections import defaultdict, Counter
 from datetime import datetime
+from urllib.parse import unquote
+import uuid
+import shutil
 
 router = APIRouter()
 
@@ -30,26 +33,24 @@ def load_all_cases():
 # 🔍 1️⃣ Entity / Case Search
 # -----------------------------------------------------------
 @router.get("/cases/search")
-def search_cases(query: str = Query(..., description="Entity value (email, UPI, phone, domain, etc.)")):
-    """Search all cases for a given entity."""
+def search_cases(q: str = Query("", description="Optional search filter")):
+    """Return all analyzed cases (flattened summary for dashboard)."""
     results = []
     for case in load_all_cases():
-        for ent in case.get("entities", []):
-            if query.lower() in ent["value"].lower():
-                results.append({
-                    "case_id": case["file_id"],
-                    "category": case.get("scam_class", {}).get("category"),
-                    "risk": case.get("risk", {}).get("score"),
-                    "risk_level": case.get("risk", {}).get("risk_level"),
-                    "timestamp": case.get("analyzed_at"),
-                })
-                break
+        if q.lower() in json.dumps(case).lower():
+            results.append({
+                "file_id": case.get("file_id"),
+                "scam_class": {
+                    "category": case.get("scam_class", {}).get("category", "Unknown")
+                },
+                "risk": {
+                    "score": case.get("risk", {}).get("score", 0.0),
+                    "risk_level": case.get("risk", {}).get("risk_level", "N/A")
+                },
+                "analyzed_at": case.get("analyzed_at"),
+            })
+    return results
 
-    return {
-        "query": query,
-        "total_hits": len(results),
-        "cases": results,
-    }
 
 
 # -----------------------------------------------------------
@@ -84,14 +85,27 @@ def top_entities(limit: int = 10):
 # -----------------------------------------------------------
 # 🧩 3️⃣ Entity Intelligence Profile
 # -----------------------------------------------------------
+# at top of file
+from urllib.parse import unquote
+from fastapi import Query, HTTPException
+
+# replace existing endpoint with this
 @router.get("/entities/profile")
-def entity_profile(value: str):
-    """Full intelligence profile for an entity across all cases."""
+def entity_profile(entity: str = Query(None), value: str = Query(None)):
+    # Accept either ?entity=... or ?value=...; decode and normalize
+    raw = entity or value or ""
+    query_value = unquote(raw).strip().lower()
+
+    if not query_value:
+        raise HTTPException(status_code=422, detail="Missing 'entity' or 'value' query parameter")
+
     cases_found = []
     categories, risk_scores = set(), []
+
     for case in load_all_cases():
         for ent in case.get("entities", []):
-            if value.lower() in ent["value"].lower():
+            ent_val = (ent.get("value", "") or "").lower()
+            if query_value in ent_val:
                 cases_found.append({
                     "case_id": case["file_id"],
                     "category": case.get("scam_class", {}).get("category"),
@@ -103,16 +117,19 @@ def entity_profile(value: str):
                 risk_scores.append(case.get("risk", {}).get("score", 0.0))
 
     if not cases_found:
-        raise HTTPException(status_code=404, detail="Entity not found in any case")
+        raise HTTPException(status_code=404, detail=f"Entity '{query_value}' not found in any case")
 
-    avg_risk = round(sum(risk_scores) / len(risk_scores), 2)
+    avg_risk = round(sum(risk_scores) / len(risk_scores), 2) if risk_scores else 0.0
     return {
-        "entity": value,
+        "entity": query_value,
         "found_in": len(cases_found),
-        "linked_categories": list(categories),
+        "linked_categories": [c for c in categories if c],
         "avg_risk": avg_risk,
         "cases": cases_found,
     }
+
+
+
 
 
 # -----------------------------------------------------------

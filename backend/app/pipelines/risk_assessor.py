@@ -125,7 +125,18 @@ def assess_risk(text, entities, scam_class, osint_hits=None):
     for hit in osint_hits:
         agg = hit.get("aggregate_score", 0)
         osint_confidence += min(1.0, agg / 100 * 0.3)
-    osint_score = min(1.0, osint_confidence)
+    # --- 5️⃣ OSINT contribution ---
+    osint_score = 0
+    if osint_hits:
+        for hit in osint_hits:
+            if isinstance(hit, dict):
+                agg = hit.get("aggregate_score", 0)
+                osint_score += agg / 100
+            else:
+            # handle stray string entries safely
+                osint_score += 0.1
+        osint_score = min(1.0, osint_score / len(osint_hits))
+
 
     # --- 6️⃣ Dynamic weight tuning ---
     # Adjust relative weights depending on scam type

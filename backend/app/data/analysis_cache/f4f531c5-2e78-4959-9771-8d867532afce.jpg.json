@@ -1,0 +1,72 @@
+{
+  "file_id": "f4f531c5-2e78-4959-9771-8d867532afce.jpg",
+  "raw_text": "CONGRATULATIONS\n\n@ You're one of Top 25 Lucky Winners!\n\nSpin the wheel to claim your special prize:\niPhone 8 - iMac - iPad Pro\n\n© Click now to claim your prize!\n\nEy Unpersonalized phrasing B Wording that sounds urgent",
+  "entities": [
+    {
+      "type": "ORG",
+      "value": "Top 25 Lucky Winners",
+      "normalized": "top 25 lucky winners",
+      "confidence": 0.7,
+      "context": "@ You're one of Top 25 Lucky Winners!\n\nSpin the wheel"
+    }
+  ],
+  "scam_class": {
+    "category": "Lottery / Prize Scam",
+    "confidence": 0.3,
+    "votes": {
+      "ml": "Lottery / Prize Scam",
+      "semantic": "Lottery / Prize Scam",
+      "heuristic": "Fake Bank / Financial Fraud"
+    },
+    "tone_signals": {
+      "urgency_score": 0.33,
+      "financial_score": 0.0,
+      "reward_score": 1.0,
+      "tone_factor": 0.25
+    },
+    "sentiment_polarity": 0.397,
+    "keywords": []
+  },
+  "osint_hits": [
+    {
+      "entity": "Top 25 Lucky Winners",
+      "type": "org",
+      "timestamp": "2025-11-09T06:48:26.076004",
+      "aggregate_score": 0,
+      "risk": "Unknown"
+    }
+  ],
+  "risk": {
+    "score": 0.209,
+    "risk_level": "LOW 🟢",
+    "rationale": "Urgent or manipulative keywords found",
+    "timestamp": "2025-11-09T06:48:26.076852",
+    "entity_details": [
+      {
+        "entity": "Top 25 Lucky Winners",
+        "type": "ORG",
+        "risk_score": 0.0,
+        "risk_level": "Low",
+        "tags": []
+      }
+    ],
+    "factors": {
+      "scam_confidence": 0.3,
+      "avg_entity_risk": 0.0,
+      "keyword_toxicity": 0.41,
+      "tone_score": 0.0,
+      "sentiment_neutrality": 0.5456349206349207,
+      "osint_weight": 0.0
+    },
+    "scam_type": "Lottery / Prize Scam"
+  },
+  "url_qr_findings": [],
+  "url_summary": {
+    "total_urls_scanned": 0,
+    "high_risk": 0,
+    "medium_risk": 0,
+    "low_risk": 0,
+    "top_high_risk_domains": []
+  },
+  "analyzed_at": "2025-11-09 06:48:26"
+}

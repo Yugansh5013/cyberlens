@@ -2,7 +2,7 @@ from fastapi import APIRouter, Form, HTTPException
 from app.pipelines.ocr import extract_text_from_image
 from app.pipelines.regex_extract import extract_entities
 from app.pipelines.ner import extract_named_entities
-from app.pipelines.osint_engine import osint_lookup
+from app.pipelines.osint_engine import enrich_entity_osint
 from app.pipelines.risk_assessor import assess_risk
 from app.pipelines.scam_classifier import classify_scam
 from app.pipelines.url_qr_scanner import scan_urls_and_qr
@@ -20,7 +20,6 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 
 @router.post("/analyze")
 def analyze(file_id: str = Form(...)):
-    """🚀 Main AI–OSINT–Fusion analysis endpoint for CyberLens."""
     file_path = os.path.join(UPLOAD_DIR, file_id)
 
     if not os.path.exists(file_path):
@@ -41,7 +40,11 @@ def analyze(file_id: str = Form(...)):
         # 4️⃣ OSINT Cross-Verification for Entities
         osint_hits = []
         for e in all_entities:
-            osint_hits.extend(osint_lookup(e["value"]))
+            result = enrich_entity_osint(e)
+            if result and isinstance(result, dict):
+                osint_hits.append(result)
+
+
 
         # 5️⃣ Risk Assessment (multi-factor AI risk fusion)
         risk_result = assess_risk(raw_text, all_entities, scam_class, osint_hits)

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.upload_evidence import router as upload_router         # Step 1: Upload Evidence
 from app.api.analyze import router as analyze_router                 # Steps 2–4: OCR + NER + Classify + URL/QR
 from app.api.report import router as report_router                   # Step 2: Single Case PDF Report
-from app.api.threat_intel import router as intel_router              # Step 3: Real-time Threat Intelligence Hub
+from app.api.threat_hub import router as intel_router              # Step 3: Real-time Threat Intelligence Hub
 from app.api.batch_analyze import router as batch_router             # Step 5: Multi-File Batch Analyzer
 from app.api.unified_report import router as unified_router          # Step 5: Unified Intelligence PDF Report
 

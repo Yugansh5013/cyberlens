@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Turbopack configuration
+  turbopack: {},
+
+  // Alias (works automatically through tsconfig.json in Turbopack)
 };
 
 export default nextConfig;

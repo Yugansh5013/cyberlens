@@ -1,15 +1,22 @@
+"use client";
+
 export default function RiskMeter({ score }: { score: number }) {
+  const percent = Math.round(score * 100);
   const color =
-    score >= 0.75 ? "bg-red-500" : score >= 0.45 ? "bg-yellow-400" : "bg-green-500";
-  const label =
-    score >= 0.75 ? "HIGH" : score >= 0.45 ? "MEDIUM" : "LOW";
+    percent >= 75
+      ? "bg-red-600"
+      : percent >= 45
+      ? "bg-orange-500"
+      : "bg-green-500";
 
   return (
-    <div className="space-y-1">
-      <div className="text-sm font-medium">Risk Level: {label}</div>
-      <div className="w-full h-3 bg-gray-200 rounded">
-        <div className={`h-3 ${color} rounded`} style={{ width: `${score * 100}%` }} />
+    <div className="my-2">
+      <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+        <div className={`${color} h-4`} style={{ width: `${percent}%` }} />
       </div>
+      <p className="text-sm text-gray-600 mt-1 font-medium">
+        Risk Score: {percent}%
+      </p>
     </div>
   );
 }

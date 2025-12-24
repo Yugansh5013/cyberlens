@@ -7,7 +7,7 @@ from datetime import datetime
 from app.pipelines.ocr import extract_text_from_image
 from app.pipelines.regex_extract import extract_entities
 from app.pipelines.ner import extract_named_entities
-from app.pipelines.osint_engine import osint_lookup
+from app.pipelines.osint_engine import enrich_entity_osint
 from app.pipelines.risk_assessor import assess_risk
 from app.pipelines.scam_classifier import classify_scam
 from app.pipelines.url_qr_scanner import scan_urls_and_qr
@@ -41,7 +41,7 @@ def process_single_file(file_path: str):
     osint_hits = []
     for e in all_entities:
         try:
-            osint_hits.extend(osint_lookup(e["value"]))
+            osint_hits.extend(enrich_entity_osint(e["value"]))
         except Exception as e:
             print(f"⚠️ OSINT lookup failed for {e['value']}: {e}")
 

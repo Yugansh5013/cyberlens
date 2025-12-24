@@ -1,0 +1,48 @@
+{
+  "file_id": "967947d0-5b07-484b-baf5-8e16ba2af74c.png",
+  "raw_text": "‘Yew AAC 300000007624 Is\ncones\n\n8. 400,000.00\n\n(eee: 05-08-22 1043-28",
+  "entities": [],
+  "scam_class": {
+    "category": "Fake Bank / Financial Fraud",
+    "confidence": 0.14,
+    "votes": {
+      "ml": "Fake Bank / Financial Fraud",
+      "semantic": "Tech Support Scam",
+      "heuristic": "Fake Bank / Financial Fraud"
+    },
+    "tone_signals": {
+      "urgency_score": 0.0,
+      "financial_score": 0.0,
+      "reward_score": 0.0,
+      "tone_factor": 0.0
+    },
+    "sentiment_polarity": 0.0,
+    "keywords": []
+  },
+  "osint_hits": [],
+  "risk": {
+    "score": 0.106,
+    "risk_level": "LOW 🟢",
+    "rationale": "No major fraud indicators found.",
+    "timestamp": "2025-11-09T16:13:02.509333",
+    "entity_details": [],
+    "factors": {
+      "scam_confidence": 0.14,
+      "avg_entity_risk": 0,
+      "keyword_toxicity": 0.0,
+      "tone_score": 0.0,
+      "sentiment_neutrality": 1.0,
+      "osint_weight": 0
+    },
+    "scam_type": "Fake Bank / Financial Fraud"
+  },
+  "url_qr_findings": [],
+  "url_summary": {
+    "total_urls_scanned": 0,
+    "high_risk": 0,
+    "medium_risk": 0,
+    "low_risk": 0,
+    "top_high_risk_domains": []
+  },
+  "analyzed_at": "2025-11-09 16:13:02"
+}

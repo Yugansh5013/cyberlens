@@ -1,46 +1,222 @@
+// =============================
+// CYBERLENS FRONTEND API WRAPPER
+// =============================
+//
+// This file provides a single, unified Axios interface
+// to communicate with all backend APIs (FastAPI).
+//
+// Endpoints covered:
+//  - Upload evidence
+//  - Analyze case
+//  - Generate report / unified report
+//  - Search cases
+//  - Top entities / case clusters
+//  - Entity intelligence profile
+//  - Batch analyze
+//
+// =============================
+
 import axios from "axios";
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000/api";
+// 🌍 Base URL — update in .env.local
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
-export async function uploadEvidence(file: File, onProgress?: (p: number) => void) {
+// Axios instance
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 30000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// 🔁 Interceptor for unified error logging
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const errorData = err.response?.data || {};
+    const status = err.response?.status;
+    const url = err.config?.url;
+
+    // If entity not found, just warn instead of crashing
+    if (status === 404) {
+      console.warn(`⚠️ Entity not found at ${url}`);
+      return Promise.reject({ message: "Entity not found", status, url });
+    }
+
+    console.error("🚨 API Error Details:", errorData);
+    throw new Error(
+      JSON.stringify({
+        url,
+        status,
+        data: errorData,
+      })
+    );
+  }
+);
+
+
+// ===================================================================
+// 🧱 CORE ENDPOINTS
+// ===================================================================
+
+// 1️⃣ Upload Evidence (multipart)
+export async function uploadEvidence(file: File) {
   const form = new FormData();
   form.append("file", file);
-  const res = await axios.post(`${BASE}/upload-evidence`, form, {
+
+  const res = await api.post("/upload-evidence", form, {
     headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: (e) => {
-      if (e.total && onProgress) onProgress(Math.round((e.loaded * 100) / e.total));
-    },
+  });
+
+  // Expected Response: { file_id, sha256 }
+  return res.data;
+}
+
+// 2️⃣ Analyze Evidence (OCR + NER + Classifier + OSINT)
+export async function analyzeEvidence(file_id: string) {
+  const form = new FormData();
+  form.append("file_id", file_id);
+
+  const res = await api.post("/analyze", form, {
+    headers: { "Content-Type": "multipart/form-data" }, // 👈 add this
+  });
+
+  return res.data;
+}
+
+
+// 3️⃣ Generate Case Report (PDF)
+export async function generateReport(file_id: string) {
+  const form = new FormData();
+  form.append("file_id", file_id);
+
+  const res = await api.post("/report", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+    responseType: "blob", // important
+  });
+
+  return res.data; // blob data
+}
+
+export async function batchAnalyze(files: File[]) {
+  const form = new FormData();
+  files.forEach((f) => form.append("files", f));
+
+  const res = await api.post("/batch-analyze", form, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
 }
 
-export async function analyzeEvidence(file_id: string) {
+export async function generateUnifiedReport(batch_id: string) {
   const form = new FormData();
-  form.append("file_id", file_id);
-  const res = await axios.post(`${BASE}/analyze`, form);
+  form.append("batch_id", batch_id);
+
+  const res = await api.post("/unified-report", form, { responseType: "blob" });
   return res.data;
 }
 
-export async function generateReport(file_id: string) {
-  const form = new FormData();
-  form.append("file_id", file_id);
-  const res = await fetch(`${BASE}/report`, { method: "POST", body: form });
-  if (!res.ok) throw new Error("Report generation failed");
-  return await res.blob();
-}
 
-export async function searchEntities(query: string) {
-  const res = await axios.post(`${BASE}/cases/search`, { query });
+// 6️⃣ Search Cases
+export async function searchCases(query: string) {
+  const res = await api.get(`/cases/search?q=${encodeURIComponent(query)}`);
   return res.data;
 }
 
+// 8️⃣ Fetch Case Clusters (for Dashboard visualization)
+export async function getCaseClusters() {
+  const res = await api.get("/cases/clusters");
+  return res.data;
+}
+
+
+// 🔟 Health Check (Basic connectivity)
+export async function healthCheck() {
+  const res = await axios.get("http://127.0.0.1:8000/");
+  return res.data;
+}
+
+// ===================================================================
+// ⚙️ UTILITY HELPERS
+// ===================================================================
+
+// 🧾 Open PDF Blob in new tab
+export function openPdfBlob(blobData: Blob, filename = "report.pdf") {
+  const blob = new Blob([blobData], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// 🧩 Simplified wrapper to call multiple endpoints together
+export async function analyzeAndReport(file: File) {
+  const upload = await uploadEvidence(file);
+  const analysis = await analyzeEvidence(upload.file_id);
+  return { ...analysis, file_id: upload.file_id };
+}
+
+// ===================================================================
+// 🧠 CASE DATA ACCESS (Local Cache / API Bridge)
+// ===================================================================
+
+// Fetch a single analyzed case from cache
+export async function getCaseFromCache(file_id: string) {
+  try {
+    const res = await api.get(`/data/analysis_cache/${file_id}.json`, {
+      baseURL: "http://127.0.0.1:8000", // direct static path
+    });
+    return res.data;
+  } catch (err) {
+    console.warn("⚠️ Could not fetch cached case:", file_id, err);
+    throw new Error("Cached case not found");
+  }
+}
+
+// Fetch all analyzed cases from cache
+export async function getAllCases() {
+  try {
+    const res = await api.get("/cases/search?q=");
+    // backend may return { query, total_hits, cases: [...] } OR an array
+    if (Array.isArray(res.data)) return res.data;
+    if (res.data?.cases) return res.data.cases;
+    // fallback: if backend returned single object with case info, wrap it
+    return res.data ? [res.data] : [];
+  } catch (err) {
+    console.warn("⚠️ Could not fetch case list:", err);
+    return [];
+  }
+}
+
+/** Fetch top entities; normalize to return simple array of {entity, count, avg_risk} */
 export async function getTopEntities() {
-  const res = await axios.get(`${BASE}/cases/top-entities`);
+  try {
+    const res = await api.get("/cases/top-entities");
+    // backend returns { total_entities, top: [...] } or an array -> normalize
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.data?.top)) return res.data.top;
+    // older backend: might return { top_entities: [...] }
+    if (Array.isArray(res.data?.top_entities)) return res.data.top_entities;
+    return [];
+  } catch (err) {
+    console.warn("⚠️ Failed to fetch top entities:", err);
+    return [];
+  }
+}
+
+export async function getEntityProfile(entity: string) {
+  // make sure we call with the 'entity' param to match backend's primary param
+  const res = await api.get(`/entities/profile?entity=${encodeURIComponent(entity)}`);
   return res.data;
 }
 
-export async function getUnifiedSummary() {
-  const res = await axios.get(`${BASE}/cases/summary`);
-  return res.data;
-}
 
+
+
+// Export Axios instance (for debugging)
+export default api;
