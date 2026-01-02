@@ -9,6 +9,8 @@ export default function Navbar() {
   const navItems = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "Upload", href: "/upload" },
+    { name: "Cases", href: "/cases" },
+    { name: "Fraud Predict", href: "/fraud-predict" },
     { name: "Reports", href: "/report/unified" },
   ];
 

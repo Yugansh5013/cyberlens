@@ -215,8 +215,49 @@ export async function getEntityProfile(entity: string) {
   return res.data;
 }
 
+// ===================================================================
+// 🚨 FRAUD PREDICTION ENDPOINTS
+// ===================================================================
 
+export interface ContractInput {
+  contract_type: string;
+  amount: number;
+  duration_days: number;
+  counterparty_name: string;
+  counterparty_country: string;
+  payment_method: string;
+  industry: string;
+}
 
+export interface FraudPredictionResult {
+  prediction: "fraud" | "legitimate";
+  fraud_probability: number;
+  confidence: number;
+  fraud_signals: Array<{
+    signal_type: string;
+    description: string;
+    severity: string;
+  }>;
+  timestamp: string;
+}
+
+// Predict single contract
+export async function predictFraud(contract: ContractInput): Promise<FraudPredictionResult> {
+  const res = await api.post("/fraud-predict", contract);
+  return res.data;
+}
+
+// Predict batch contracts
+export async function predictFraudBatch(contracts: ContractInput[]) {
+  const res = await api.post("/fraud-predict/batch", { contracts });
+  return res.data;
+}
+
+// Get model information
+export async function getFraudModelInfo() {
+  const res = await api.get("/fraud-predict/model-info");
+  return res.data;
+}
 
 // Export Axios instance (for debugging)
 export default api;

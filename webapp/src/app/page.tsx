@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Shield, Upload, BarChart3, FileText } from "lucide-react";
+import { Shield, Upload, BarChart3, FileText, AlertTriangle, Network } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -44,6 +44,15 @@ export default function HomePage() {
           >
             <div className="flex items-center gap-2 justify-center">
               <BarChart3 className="w-4 h-4" /> Dashboard
+            </div>
+          </Link>
+
+          <Link
+            href="/fraud-predict"
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition"
+          >
+            <div className="flex items-center gap-2 justify-center">
+              <AlertTriangle className="w-4 h-4" /> Fraud Detection
             </div>
           </Link>
 
@@ -104,6 +113,11 @@ const features = [
     icon: <FileText className="w-6 h-6" />,
   },
   {
+    title: "ML-Powered Fraud Detection",
+    desc: "Advanced machine learning models analyze contract patterns to predict fraud with confidence scores and explainable fraud signals.",
+    icon: <AlertTriangle className="w-6 h-6" />,
+  },
+  {
     title: "Batch Intelligence Reports",
     desc: "Analyze multiple evidences simultaneously and generate unified reports that summarize patterns, risk clusters, and related entities.",
     icon: <Upload className="w-6 h-6" />,
@@ -111,11 +125,6 @@ const features = [
   {
     title: "Interactive Dashboard",
     desc: "Visualize clusters, top entities, and overall risk metrics to prioritize investigations efficiently.",
-    icon: <BarChart3 className="w-6 h-6" />,
-  },
-  {
-    title: "Automated Case Reports",
-    desc: "Generate downloadable PDF reports for each case — reducing manual documentation time by up to 80%.",
-    icon: <FileText className="w-6 h-6" />,
+    icon: <Network className="w-6 h-6" />,
   },
 ];
