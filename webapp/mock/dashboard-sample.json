@@ -1,0 +1,299 @@
+{
+  "summary": {
+    "total_spend": 1234567890,
+    "tenders_analyzed": 4523,
+    "high_risk_tenders": 231,
+    "departments_flagged": 14
+  },
+  "regions": [
+    {
+      "region_code": "DL-01",
+      "region_name": "Central Delhi",
+      "cri_score": 72.3,
+      "total_spend": 12000000,
+      "red_flags": ["single_bid", "short_window", "golden_param"]
+    },
+    {
+      "region_code": "DL-02",
+      "region_name": "South Delhi",
+      "cri_score": 34.9,
+      "total_spend": 8000000,
+      "red_flags": ["split_contract"]
+    },
+    {
+      "region_code": "DL-03",
+      "region_name": "North Delhi",
+      "cri_score": 56.7,
+      "total_spend": 9500000,
+      "red_flags": ["single_bid", "repeat_supplier"]
+    },
+    {
+      "region_code": "DL-04",
+      "region_name": "East Delhi",
+      "cri_score": 45.2,
+      "total_spend": 7800000,
+      "red_flags": ["short_window"]
+    },
+    {
+      "region_code": "DL-05",
+      "region_name": "West Delhi",
+      "cri_score": 28.1,
+      "total_spend": 11200000,
+      "red_flags": []
+    }
+  ],
+  "benford": {
+    "counts": {
+      "1": 301,
+      "2": 175,
+      "3": 110,
+      "4": 90,
+      "5": 60,
+      "6": 50,
+      "7": 40,
+      "8": 25,
+      "9": 10
+    },
+    "mad": 0.018,
+    "chi2": 25.6
+  },
+  "network": {
+    "buyers": [
+      {
+        "id": "B-100",
+        "name": "Parks Dept",
+        "contracts": 120,
+        "total_spend": 1200000,
+        "risk_score": 78.3
+      },
+      {
+        "id": "B-101",
+        "name": "Roads Dept",
+        "contracts": 95,
+        "total_spend": 1500000,
+        "risk_score": 65.2
+      },
+      {
+        "id": "B-102",
+        "name": "Education Dept",
+        "contracts": 80,
+        "total_spend": 900000,
+        "risk_score": 45.8
+      },
+      {
+        "id": "B-103",
+        "name": "Health Dept",
+        "contracts": 110,
+        "total_spend": 1800000,
+        "risk_score": 52.3
+      }
+    ],
+    "suppliers": [
+      {
+        "id": "S-200",
+        "name": "Alpha Suppliers Pvt Ltd",
+        "contracts": 45,
+        "total_spend": 500000,
+        "risk_score": 85.1
+      },
+      {
+        "id": "S-201",
+        "name": "Beta Construction",
+        "contracts": 38,
+        "total_spend": 450000,
+        "risk_score": 72.5
+      },
+      {
+        "id": "S-202",
+        "name": "Gamma Services",
+        "contracts": 52,
+        "total_spend": 380000,
+        "risk_score": 58.9
+      },
+      {
+        "id": "S-203",
+        "name": "Delta Enterprises",
+        "contracts": 30,
+        "total_spend": 420000,
+        "risk_score": 68.2
+      }
+    ],
+    "edges": [
+      {
+        "buyer_id": "B-100",
+        "supplier_id": "S-200",
+        "contracts": 20,
+        "value": 250000
+      },
+      {
+        "buyer_id": "B-100",
+        "supplier_id": "S-201",
+        "contracts": 15,
+        "value": 180000
+      },
+      {
+        "buyer_id": "B-101",
+        "supplier_id": "S-200",
+        "contracts": 12,
+        "value": 150000
+      },
+      {
+        "buyer_id": "B-101",
+        "supplier_id": "S-201",
+        "contracts": 18,
+        "value": 220000
+      },
+      {
+        "buyer_id": "B-102",
+        "supplier_id": "S-202",
+        "contracts": 25,
+        "value": 200000
+      },
+      {
+        "buyer_id": "B-103",
+        "supplier_id": "S-203",
+        "contracts": 20,
+        "value": 280000
+      }
+    ]
+  },
+  "leaderboard": [
+    {
+      "entity_id": "S-200",
+      "name": "Alpha Suppliers",
+      "total_spend": 500000,
+      "risk_score": 85,
+      "single_bid_pct": 65
+    },
+    {
+      "entity_id": "B-100",
+      "name": "Parks Dept",
+      "total_spend": 1200000,
+      "risk_score": 78,
+      "single_bid_pct": 58
+    },
+    {
+      "entity_id": "S-201",
+      "name": "Beta Construction",
+      "total_spend": 450000,
+      "risk_score": 73,
+      "single_bid_pct": 52
+    },
+    {
+      "entity_id": "S-203",
+      "name": "Delta Enterprises",
+      "total_spend": 420000,
+      "risk_score": 68,
+      "single_bid_pct": 48
+    },
+    {
+      "entity_id": "B-101",
+      "name": "Roads Dept",
+      "total_spend": 1500000,
+      "risk_score": 65,
+      "single_bid_pct": 42
+    }
+  ],
+  "time_series": [
+    {
+      "month": "2024-01",
+      "cri_avg": 30.4,
+      "tenders": 200,
+      "single_bid_rate": 35
+    },
+    {
+      "month": "2024-02",
+      "cri_avg": 32.1,
+      "tenders": 210,
+      "single_bid_rate": 38
+    },
+    {
+      "month": "2024-03",
+      "cri_avg": 35.8,
+      "tenders": 225,
+      "single_bid_rate": 42
+    },
+    {
+      "month": "2024-04",
+      "cri_avg": 38.2,
+      "tenders": 240,
+      "single_bid_rate": 45
+    },
+    {
+      "month": "2024-05",
+      "cri_avg": 42.5,
+      "tenders": 255,
+      "single_bid_rate": 48
+    },
+    {
+      "month": "2024-06",
+      "cri_avg": 45.3,
+      "tenders": 270,
+      "single_bid_rate": 52
+    },
+    {
+      "month": "2024-07",
+      "cri_avg": 48.9,
+      "tenders": 285,
+      "single_bid_rate": 55
+    },
+    {
+      "month": "2024-08",
+      "cri_avg": 52.1,
+      "tenders": 300,
+      "single_bid_rate": 58
+    },
+    {
+      "month": "2024-09",
+      "cri_avg": 55.6,
+      "tenders": 315,
+      "single_bid_rate": 61
+    },
+    {
+      "month": "2024-10",
+      "cri_avg": 58.3,
+      "tenders": 330,
+      "single_bid_rate": 63
+    },
+    {
+      "month": "2024-11",
+      "cri_avg": 60.8,
+      "tenders": 345,
+      "single_bid_rate": 65
+    },
+    {
+      "month": "2024-12",
+      "cri_avg": 63.2,
+      "tenders": 360,
+      "single_bid_rate": 67
+    }
+  ],
+  "tender_sample": {
+    "tender_id": "T-555",
+    "title": "Stationery Supply",
+    "tender_period": {
+      "start": "2024-06-01",
+      "end": "2024-06-03"
+    },
+    "bidders": ["X", "Y"],
+    "winner": "X",
+    "award_value": 24800,
+    "fraud_signals": [
+      {
+        "signal_type": "short_window",
+        "description": "Submission window unusually short (2 days)",
+        "severity": "high"
+      },
+      {
+        "signal_type": "golden_param",
+        "description": "Tender specifications favor specific supplier",
+        "severity": "medium"
+      }
+    ]
+  },
+  "funnel": {
+    "published": 4523,
+    "bids_received": 2980,
+    "contracts_awarded": 2156
+  }
+}

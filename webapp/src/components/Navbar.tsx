@@ -11,6 +11,8 @@ export default function Navbar() {
     { name: "Upload", href: "/upload" },
     { name: "Cases", href: "/cases" },
     { name: "Fraud Predict", href: "/fraud-predict" },
+    { name: "Procurement", href: "/procurement" },
+    { name: "Welfare Forensics", href: "/welfare" },
     { name: "Reports", href: "/report/unified" },
   ];
 

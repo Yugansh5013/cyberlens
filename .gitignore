@@ -11,7 +11,7 @@ frontend/.env.local
 
 # Environment files
 .env
-backend/.env
+backend/.venv
 
 # Build outputs
 *.sqlite

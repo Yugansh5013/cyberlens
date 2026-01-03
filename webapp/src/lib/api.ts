@@ -259,5 +259,107 @@ export async function getFraudModelInfo() {
   return res.data;
 }
 
+// ===================================================================
+// 📊 PROCUREMENT DASHBOARD ENDPOINTS
+// ===================================================================
+
+export interface DashboardData {
+  summary: {
+    total_spend: number;
+    tenders_analyzed: number;
+    high_risk_tenders: number;
+    departments_flagged: number;
+  };
+  regions: Array<{
+    region_code: string;
+    region_name: string;
+    cri_score: number;
+    total_spend: number;
+    red_flags: string[];
+  }>;
+  benford: {
+    counts: Record<string, number>;
+    mad: number;
+    chi2: number;
+  };
+  network: {
+    buyers: Array<{
+      id: string;
+      name: string;
+      contracts: number;
+      total_spend: number;
+      risk_score: number;
+    }>;
+    suppliers: Array<{
+      id: string;
+      name: string;
+      contracts: number;
+      total_spend: number;
+      risk_score: number;
+    }>;
+    edges: Array<{
+      buyer_id: string;
+      supplier_id: string;
+      contracts: number;
+      value: number;
+    }>;
+  };
+  leaderboard: Array<{
+    entity_id: string;
+    name: string;
+    total_spend: number;
+    risk_score: number;
+    single_bid_pct: number;
+  }>;
+  time_series: Array<{
+    month: string;
+    cri_avg: number;
+    tenders: number;
+    single_bid_rate?: number;
+  }>;
+  funnel: {
+    published: number;
+    bids_received: number;
+    contracts_awarded: number;
+  };
+}
+
+// Load dashboard data - falls back to mock if API unavailable
+export async function getDashboardData(): Promise<DashboardData> {
+  try {
+    // Try to fetch from API endpoints
+    const [summary, regions, benford, network, leaderboard, timeSeries, funnel] = await Promise.all([
+      api.get("/cases/top-entities").catch(() => null),
+      api.get("/cases/regions").catch(() => null),
+      api.get("/cases/benford").catch(() => null),
+      api.get("/cases/clusters").catch(() => null),
+      api.get("/cases/top-entities").catch(() => null),
+      api.get("/cases/time-series").catch(() => null),
+      api.get("/cases/funnel").catch(() => null),
+    ]);
+
+    // If any API call succeeded, use that data
+    if (summary || regions || benford || network) {
+      return {
+        summary: summary?.data || {},
+        regions: regions?.data || [],
+        benford: benford?.data || {},
+        network: network?.data || { buyers: [], suppliers: [], edges: [] },
+        leaderboard: leaderboard?.data || [],
+        time_series: timeSeries?.data || [],
+        funnel: funnel?.data || {},
+      };
+    }
+
+    // Fall back to mock data
+    throw new Error("No API data available");
+  } catch (error) {
+    console.warn("⚠️ API unavailable, loading mock dashboard data");
+    // Import mock data dynamically
+    const mockData = await import("../../mock/dashboard-sample.json");
+    return mockData as unknown as DashboardData;
+  }
+}
+
 // Export Axios instance (for debugging)
 export default api;
