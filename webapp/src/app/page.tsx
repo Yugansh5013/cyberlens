@@ -2,100 +2,390 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Shield, Upload, BarChart3, FileText, AlertTriangle, Network } from "lucide-react";
+import {
+  Shield,
+  Upload,
+  BarChart3,
+  FileText,
+  AlertTriangle,
+  Network,
+  TrendingUp,
+  Users,
+  Building2,
+  Wallet,
+  ArrowRight,
+  CheckCircle2,
+  Brain,
+  Scale,
+  Eye
+} from "lucide-react";
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 60 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: "easeOut" }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 export default function HomePage() {
   return (
-    <main className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center text-center px-6">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
       {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="max-w-3xl mx-auto"
-      >
-        <div className="flex justify-center mb-4">
-          <Shield className="w-14 h-14 text-cyan-500" />
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 text-gray-900">
-          CyberLens <span className="text-cyan-600">AI Forensics</span>
-        </h1>
-
-        <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto mb-8">
-          An AI-powered investigation toolkit that transforms digital evidence
-          into actionable intelligence — combining OCR, NLP, Scam Classification,
-          OSINT, and Risk Analytics in one seamless workflow.
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link
-            href="/upload"
-            className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition"
-          >
-            <div className="flex items-center gap-2 justify-center">
-              <Upload className="w-4 h-4" /> Upload Evidence
-            </div>
-          </Link>
-
-          <Link
-            href="/dashboard"
-            className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition"
-          >
-            <div className="flex items-center gap-2 justify-center">
-              <BarChart3 className="w-4 h-4" /> Dashboard
-            </div>
-          </Link>
-
-          <Link
-            href="/fraud-predict"
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition"
-          >
-            <div className="flex items-center gap-2 justify-center">
-              <AlertTriangle className="w-4 h-4" /> Fraud Detection
-            </div>
-          </Link>
-
-          <Link
-            href="/report/unified"
-            className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-medium shadow-md transition"
-          >
-            <div className="flex items-center gap-2 justify-center">
-              <FileText className="w-4 h-4" /> Unified Report
-            </div>
-          </Link>
-        </div>
-      </motion.div>
-
-      {/* Feature Grid */}
-      <section className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
-        {features.map((f, i) => (
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-32">
           <motion.div
-            key={f.title}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 text-left hover:shadow-lg transition"
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto"
           >
-            <div className="text-cyan-600 mb-3">{f.icon}</div>
-            <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">{f.desc}</p>
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-cyan-500/10 rounded-2xl backdrop-blur-sm border border-cyan-500/20">
+                <Shield className="w-16 h-16 text-cyan-400" />
+              </div>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-blue-200">
+              CyberLens
+            </h1>
+
+            <p className="text-xl md:text-2xl font-semibold mb-4 text-cyan-100">
+              AI-Powered Digital Forensics & Governance Intelligence
+            </p>
+
+            <p className="text-lg text-slate-300 leading-relaxed max-w-3xl mx-auto mb-10">
+              Empowering auditors, investigators, and policymakers with statistical forensics,
+              AI-assisted analysis, and explainable intelligence for evidence-based governance.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="#governance-modules"
+                className="group bg-cyan-500 hover:bg-cyan-400 text-white px-8 py-4 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-2"
+              >
+                Explore Dashboards
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+
+              <Link
+                href="/upload"
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold border border-white/20 hover:border-white/40 transition-all duration-300"
+              >
+                Upload Evidence
+              </Link>
+            </div>
           </motion.div>
-        ))}
+        </div>
+
+        {/* Decorative Wave */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1200 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M0 120L50 110C100 100 200 80 300 70C400 60 500 60 600 65C700 70 800 80 900 85C1000 90 1100 90 1150 90L1200 90V120H1150C1100 120 1000 120 900 120C800 120 700 120 600 120C500 120 400 120 300 120C200 120 100 120 50 120H0V120Z" fill="rgb(248 250 252)" />
+          </svg>
+        </div>
       </section>
 
-      {/* Bottom Section */}
-      <footer className="mt-20 text-gray-500 text-sm text-center">
-        <p>Empowering investigators through automation, intelligence & clarity.</p>
-        <p className="mt-2">
-          Built with ❤️ using FastAPI, Next.js, and Machine Learning.
-        </p>
+      {/* Governance Modules - Primary Feature */}
+      <section id="governance-modules" className="py-20 px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              Governance Intelligence Modules
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Statistical forensics and AI-powered anomaly detection for three critical governance domains
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {governanceModules.map((module) => (
+              <motion.div key={module.href} variants={fadeInUp}>
+                <Link href={module.href}>
+                  <div className="group h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border border-slate-200 hover:border-cyan-400 hover:-translate-y-2">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={`p-4 rounded-xl ${module.bgColor} ${module.textColor}`}>
+                        {module.icon}
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-cyan-500 group-hover:translate-x-1 transition-all" />
+                    </div>
+
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-cyan-600 transition-colors">
+                      {module.title}
+                    </h3>
+
+                    <p className="text-slate-600 mb-4 leading-relaxed">
+                      {module.description}
+                    </p>
+
+                    <div className="flex items-center text-sm font-semibold text-cyan-600 group-hover:text-cyan-700">
+                      Open Dashboard
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Platform Capabilities */}
+      <section className="py-20 px-6 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Platform Capabilities
+            </h2>
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Enterprise-grade forensics toolkit built for national-scale governance intelligence
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {capabilities.map((capability) => (
+              <motion.div
+                key={capability.title}
+                variants={fadeInUp}
+                className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition-all duration-300"
+              >
+                <div className="text-cyan-400 mb-4">{capability.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{capability.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{capability.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Who It's For */}
+      <section className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              Built for Governance Professionals
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Trusted by auditors, investigators, and policymakers across government institutions
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {targetUsers.map((user) => (
+              <motion.div
+                key={user.title}
+                variants={fadeInUp}
+                className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-all duration-300"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-cyan-50 rounded-lg text-cyan-600">
+                    {user.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-slate-900 mb-1">{user.title}</h3>
+                    <p className="text-slate-600 text-sm">{user.description}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-6 bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 text-white">
+        <motion.div
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Access Governance Dashboards
+          </h2>
+          <p className="text-xl text-cyan-50 mb-10 leading-relaxed">
+            Start analyzing public spending, procurement, and welfare delivery with statistical forensics and AI-powered insights
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/fiscal"
+              className="bg-white text-cyan-600 hover:bg-cyan-50 px-8 py-4 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+            >
+              Fiscal Leakage →
+            </Link>
+            <Link
+              href="/procurement"
+              className="bg-white text-cyan-600 hover:bg-cyan-50 px-8 py-4 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+            >
+              Procurement Intelligence →
+            </Link>
+            <Link
+              href="/welfare"
+              className="bg-white text-cyan-600 hover:bg-cyan-50 px-8 py-4 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+            >
+              Welfare Forensics →
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-400 py-12 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-sm mb-2">
+            CyberLens © 2026 — AI-Powered Digital Forensics Pipeline
+          </p>
+          <p className="text-xs text-slate-500">
+            Built with Next.js 16, FastAPI, and Machine Learning • For official use by authorized government agencies
+          </p>
+        </div>
       </footer>
     </main>
   );
 }
 
-// 🔍 Feature list for judges
+// Governance Modules Data
+const governanceModules = [
+  {
+    title: "Fiscal Leakage Analysis",
+    description: "Benford's Law-based anomaly detection in government spending to identify threshold gaming and invoice manipulation patterns",
+    href: "/fiscal",
+    icon: <Wallet className="w-8 h-8" />,
+    bgColor: "bg-emerald-50",
+    textColor: "text-emerald-600"
+  },
+  {
+    title: "Public Procurement Intelligence",
+    description: "Bid-rigging and cartel detection in public tenders using statistical analysis and behavioral pattern recognition",
+    href: "/procurement",
+    icon: <Building2 className="w-8 h-8" />,
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-600"
+  },
+  {
+    title: "Welfare Delivery Forensics",
+    description: "Beneficiary and disbursement anomaly detection to identify ghost beneficiaries and delivery gaps in social schemes",
+    href: "/welfare",
+    icon: <Users className="w-8 h-8" />,
+    bgColor: "bg-purple-50",
+    textColor: "text-purple-600"
+  }
+];
+
+// Platform Capabilities
+const capabilities = [
+  {
+    title: "Statistical Forensics",
+    description: "Benford's Law and research-backed statistical methods for detecting financial anomalies",
+    icon: <TrendingUp className="w-6 h-6" />
+  },
+  {
+    title: "AI-Assisted Investigation",
+    description: "Machine learning models for fraud prediction and scam classification with 94%+ accuracy",
+    icon: <Brain className="w-6 h-6" />
+  },
+  {
+    title: "Explainable Outputs",
+    description: "Policy-safe language and plain-language findings suitable for judicial review",
+    icon: <Eye className="w-6 h-6" />
+  },
+  {
+    title: "Court-Ready Reports",
+    description: "PDF generation with blockchain verification and chain of custody logging",
+    icon: <FileText className="w-6 h-6" />
+  },
+  {
+    title: "Multi-Source Analysis",
+    description: "OCR, NER, OSINT, and regex-based entity extraction from diverse evidence formats",
+    icon: <Network className="w-6 h-6" />
+  },
+  {
+    title: "Audit Trail",
+    description: "Immutable blockchain-based evidence logging for legal admissibility",
+    icon: <Scale className="w-6 h-6" />
+  }
+];
+
+// Target Users
+const targetUsers = [
+  {
+    title: "Law Enforcement",
+    description: "Cyber crime units and investigation agencies",
+    icon: <Shield className="w-5 h-5" />
+  },
+  {
+    title: "Government Auditors",
+    description: "CAG, CVC, and audit departments",
+    icon: <CheckCircle2 className="w-5 h-5" />
+  },
+  {
+    title: "Anti-Corruption Units",
+    description: "ACB and vigilance departments",
+    icon: <AlertTriangle className="w-5 h-5" />
+  },
+  {
+    title: "Judicial Officers",
+    description: "Magistrates and court officials",
+    icon: <Scale className="w-5 h-5" />
+  },
+  {
+    title: "Policy Analysts",
+    description: "Think tanks and research institutions",
+    icon: <BarChart3 className="w-5 h-5" />
+  },
+  {
+    title: "Procurement Officers",
+    description: "Public procurement monitoring teams",
+    icon: <Building2 className="w-5 h-5" />
+  }
+];
+
+// Original Feature list (keeping for reference, not rendered)
 const features = [
   {
     title: "OCR + NER Intelligence",
