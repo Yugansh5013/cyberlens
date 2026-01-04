@@ -7,7 +7,7 @@ from app.pipelines.risk_assessor import assess_risk
 from app.pipelines.scam_classifier import classify_scam
 from app.pipelines.url_qr_scanner import scan_urls_and_qr
 from app.services.chainlog import chain_log
-import os, json, traceback
+import os, json, traceback, gc  # <--- Added gc here
 from datetime import datetime
 from collections import Counter
 
@@ -27,15 +27,24 @@ def analyze(file_id: str = Form(...)):
 
     try:
         # 1️⃣ OCR Extraction
+        # Image processing is heavy on RAM. We clear it immediately after getting text.
         raw_text = extract_text_from_image(file_path)
+        gc.collect() 
 
         # 2️⃣ Entity Recognition (Regex + NER)
+        # NER models (like Spacy/BERT) can be large.
         regex_hits = extract_entities(raw_text)
         ner_hits = extract_named_entities(raw_text)
         all_entities = regex_hits + ner_hits
+        
+        # Clear intermediate lists and force garbage collection
+        del regex_hits, ner_hits
+        gc.collect()
 
         # 3️⃣ AI Scam Classifier (hybrid ML + embeddings)
+        # This is usually the heaviest step (PyTorch/Tensorflow).
         scam_class = classify_scam(raw_text)
+        gc.collect() # Force clear ML model weights/tensors from RAM
 
         # 4️⃣ OSINT Cross-Verification for Entities
         osint_hits = []
@@ -43,8 +52,9 @@ def analyze(file_id: str = Form(...)):
             result = enrich_entity_osint(e)
             if result and isinstance(result, dict):
                 osint_hits.append(result)
-
-
+        
+        # OSINT usually involves network requests, not much RAM, but good to be safe.
+        gc.collect()
 
         # 5️⃣ Risk Assessment (multi-factor AI risk fusion)
         risk_result = assess_risk(raw_text, all_entities, scam_class, osint_hits)
@@ -52,6 +62,7 @@ def analyze(file_id: str = Form(...)):
 
         # 6️⃣ URL + QR Analysis (Heuristic + OSINT-integrated)
         url_qr_findings = scan_urls_and_qr(raw_text, file_path)
+        gc.collect()
 
         # ✅ Derive Summary from URL + QR results
         risk_levels = [u["risk_level"] for u in url_qr_findings] if url_qr_findings else []
@@ -109,6 +120,9 @@ def analyze(file_id: str = Form(...)):
     except Exception as e:
         error_trace = traceback.format_exc()
         print("❌ Analyze error:", error_trace)
+
+        # Clean up memory even if it fails
+        gc.collect()
 
         chain_log(
             action="ANALYZE_FAILED",

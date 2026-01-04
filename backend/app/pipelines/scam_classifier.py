@@ -11,10 +11,11 @@ Combines:
 import os
 import re
 import numpy as np
+import joblib
+import gc  # <--- CRITICAL IMPORT FOR MEMORY MANAGEMENT
 from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-import joblib
 from textblob import TextBlob
 
 # =========================
@@ -69,18 +70,6 @@ def ensure_model_loaded():
         joblib.dump(vectorizer, VECTORIZER_PATH)
 
 
-def load_models():
-    ensure_model_loaded()
-    model = joblib.load(MODEL_PATH)
-    vectorizer = joblib.load(VECTORIZER_PATH)
-    
-    # ⚠️ LAZY LOAD EMBEDDER (PyTorch)
-    from sentence_transformers import SentenceTransformer
-    embedder = SentenceTransformer(EMBEDDING_MODEL)
-    
-    return model, vectorizer, embedder
-
-
 # =========================
 # ⚡ CLASSIFICATION LOGIC
 # =========================
@@ -107,91 +96,116 @@ def detect_urgency_and_financial_terms(text: str):
 def classify_scam(text: str):
     """Perform hybrid AI + semantic + heuristic classification."""
     
-    # ⚠️ IMPORT HERE
-    from sentence_transformers import util
+    # ⚠️ Initialize variables to None so we can safely delete them in 'finally'
+    model = None
+    vectorizer = None
+    embedder = None
     
-    model, vectorizer, embedder = load_models()
-    text_clean = clean_text(text)
+    try:
+        text_clean = clean_text(text)
+        if not text_clean:
+            return {"category": "Unclassified", "confidence": 0.0, "keywords": []}
 
-    if not text_clean:
-        return {"category": "Unclassified", "confidence": 0.0, "keywords": []}
+        # --- LOAD RESOURCES LOCALLY (PREVENTS GLOBAL MEMORY LEAKS) ---
+        print("⏳ Loading Scam Models...")
+        ensure_model_loaded()
+        
+        # Load lightweight ML models
+        model = joblib.load(MODEL_PATH)
+        vectorizer = joblib.load(VECTORIZER_PATH)
+        
+        # Load heavy Transformer model
+        from sentence_transformers import SentenceTransformer, util
+        embedder = SentenceTransformer(EMBEDDING_MODEL)
 
-    # --- Step 1: Logistic Regression Prediction ---
-    X = vectorizer.transform([text_clean])
-    probs = model.predict_proba(X)[0]
-    pred_label = model.classes_[np.argmax(probs)]
-    ml_conf = float(np.max(probs))
+        # --- Step 1: Logistic Regression Prediction ---
+        X = vectorizer.transform([text_clean])
+        probs = model.predict_proba(X)[0]
+        pred_label = model.classes_[np.argmax(probs)]
+        ml_conf = float(np.max(probs))
 
-    # --- Step 2: Sentence Embedding Semantic Match ---
-    embeddings_db = {
-        "Fake Bank / Financial Fraud": "bank account blocked refund transfer verify payment loan upi",
-        "Lottery / Prize Scam": "lottery prize claim reward congratulations winner gift",
-        "Tech Support Scam": "support microsoft windows security virus fix alert technician helpdesk",
-        "Fake Job / Recruitment Scam": "job offer hr recruiter apply resume salary internship work from home",
-        "Investment / Crypto Scam": "crypto bitcoin investment trading wallet profit double money fund",
-        "Romance / Relationship Scam": "love relationship chat gift darling sweetheart honey emotional connect"
-    }
+        # --- Step 2: Sentence Embedding Semantic Match ---
+        embeddings_db = {
+            "Fake Bank / Financial Fraud": "bank account blocked refund transfer verify payment loan upi",
+            "Lottery / Prize Scam": "lottery prize claim reward congratulations winner gift",
+            "Tech Support Scam": "support microsoft windows security virus fix alert technician helpdesk",
+            "Fake Job / Recruitment Scam": "job offer hr recruiter apply resume salary internship work from home",
+            "Investment / Crypto Scam": "crypto bitcoin investment trading wallet profit double money fund",
+            "Romance / Relationship Scam": "love relationship chat gift darling sweetheart honey emotional connect"
+        }
 
-    text_emb = embedder.encode(text_clean, convert_to_tensor=True)
-    semantic_scores = {
-        cat: float(util.cos_sim(text_emb, embedder.encode(desc, convert_to_tensor=True))[0][0])
-        for cat, desc in embeddings_db.items()
-    }
-    semantic_label = max(semantic_scores, key=semantic_scores.get)
-    semantic_conf = float(semantic_scores[semantic_label])
+        text_emb = embedder.encode(text_clean, convert_to_tensor=True)
+        semantic_scores = {
+            cat: float(util.cos_sim(text_emb, embedder.encode(desc, convert_to_tensor=True))[0][0])
+            for cat, desc in embeddings_db.items()
+        }
+        semantic_label = max(semantic_scores, key=semantic_scores.get)
+        semantic_conf = float(semantic_scores[semantic_label])
 
-    # --- Step 3: Heuristic Keyword Matching ---
-    KEYWORDS = {
-        "verify": "Fake Bank / Financial Fraud",
-        "upi": "Fake Bank / Financial Fraud",
-        "lottery": "Lottery / Prize Scam",
-        "crypto": "Investment / Crypto Scam",
-        "resume": "Fake Job / Recruitment Scam",
-        "love": "Romance / Relationship Scam",
-        "support": "Tech Support Scam"
-    }
-    token_counts = Counter(text_clean.split())
-    heuristic_scores = {cat: 0 for cat in SCAM_TYPES}
-    for token, count in token_counts.items():
-        if token in KEYWORDS:
-            heuristic_scores[KEYWORDS[token]] += count
-    heuristic_label = max(heuristic_scores, key=heuristic_scores.get)
-    heuristic_conf = min(1.0, heuristic_scores[heuristic_label] / 5.0)
+        # --- Step 3: Heuristic Keyword Matching ---
+        KEYWORDS = {
+            "verify": "Fake Bank / Financial Fraud",
+            "upi": "Fake Bank / Financial Fraud",
+            "lottery": "Lottery / Prize Scam",
+            "crypto": "Investment / Crypto Scam",
+            "resume": "Fake Job / Recruitment Scam",
+            "love": "Romance / Relationship Scam",
+            "support": "Tech Support Scam"
+        }
+        token_counts = Counter(text_clean.split())
+        heuristic_scores = {cat: 0 for cat in SCAM_TYPES}
+        for token, count in token_counts.items():
+            if token in KEYWORDS:
+                heuristic_scores[KEYWORDS[token]] += count
+        heuristic_label = max(heuristic_scores, key=heuristic_scores.get)
+        heuristic_conf = min(1.0, heuristic_scores[heuristic_label] / 5.0)
 
-    # --- Step 4: Tone and Sentiment Analysis ---
-    tone = detect_urgency_and_financial_terms(text_clean)
-    sentiment = TextBlob(text_clean).sentiment.polarity
-    sentiment_adj = 1 - abs(sentiment)  # high neutrality = more automated tone
+        # --- Step 4: Tone and Sentiment Analysis ---
+        tone = detect_urgency_and_financial_terms(text_clean)
+        sentiment = TextBlob(text_clean).sentiment.polarity
+        
+        # --- Step 5: Confidence Fusion ---
+        final_label = max(
+            [pred_label, semantic_label, heuristic_label],
+            key=[pred_label, semantic_label, heuristic_label].count
+        )
 
-    # --- Step 5: Confidence Fusion ---
-    final_label = max(
-        [pred_label, semantic_label, heuristic_label],
-        key=[pred_label, semantic_label, heuristic_label].count
-    )
+        weights = {"ml": 0.5, "semantic": 0.3, "heuristic": 0.2}
+        combined_conf = (
+            ml_conf * weights["ml"] +
+            semantic_conf * weights["semantic"] +
+            heuristic_conf * weights["heuristic"]
+        )
 
-    weights = {"ml": 0.5, "semantic": 0.3, "heuristic": 0.2}
-    combined_conf = (
-        ml_conf * weights["ml"] +
-        semantic_conf * weights["semantic"] +
-        heuristic_conf * weights["heuristic"]
-    )
+        # Adjust confidence based on tone factors (urgent + financial)
+        combined_conf = min(1.0, combined_conf + tone["tone_factor"] * 0.1)
 
-    # Adjust confidence based on tone factors (urgent + financial)
-    combined_conf = min(1.0, combined_conf + tone["tone_factor"] * 0.1)
+        # --- Step 6: Keyword Evidence Extraction ---
+        top_keywords = [k for k, v in KEYWORDS.items() if v == final_label and k in text_clean]
 
-    # --- Step 6: Keyword Evidence Extraction ---
-    top_keywords = [k for k, v in KEYWORDS.items() if v == final_label and k in text_clean]
+        return {
+            "category": final_label,
+            "confidence": round(combined_conf, 2),
+            "votes": {
+                "ml": pred_label,
+                "semantic": semantic_label,
+                "heuristic": heuristic_label
+            },
+            "tone_signals": tone,
+            "sentiment_polarity": round(sentiment, 3),
+            "keywords": top_keywords,
+        }
 
-    # --- Step 7: Final Output ---
-    return {
-        "category": final_label,
-        "confidence": round(combined_conf, 2),
-        "votes": {
-            "ml": pred_label,
-            "semantic": semantic_label,
-            "heuristic": heuristic_label
-        },
-        "tone_signals": tone,
-        "sentiment_polarity": round(sentiment, 3),
-        "keywords": top_keywords,
-    }
+    finally:
+        # --- ⚠️ CRITICAL MEMORY CLEANUP ---
+        # This block ALWAYS runs, even if the code above crashes.
+        # It forces the deletion of the heavy models to free up 300MB+ RAM.
+        if 'embedder' in locals() and embedder is not None:
+            del embedder
+        if 'model' in locals() and model is not None:
+            del model
+        if 'vectorizer' in locals() and vectorizer is not None:
+            del vectorizer
+        
+        gc.collect() # Force Python to release memory to OS
+        print("✅ Scam Classifier Models Unloaded from Memory")

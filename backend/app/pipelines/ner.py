@@ -1,70 +1,56 @@
 import spacy
-from collections import defaultdict
+import gc # <--- Memory management
 
-# ⚠️ LAZY LOAD GLOBAL
-_nlp_model = None
-
-def get_nlp_model():
-    global _nlp_model
-    if _nlp_model is None:
-        try:
-            print("⏳ Loading spaCy model...")
-            _nlp_model = spacy.load("en_core_web_sm")
-        except OSError:
-            raise RuntimeError(
-                "⚠️ spaCy model 'en_core_web_sm' not found. "
-                "Run: python -m spacy download en_core_web_sm"
-            )
-    return _nlp_model
-
-
-def normalize_entity(text: str) -> str:
-    """Normalize entities for deduplication & linking."""
-    return text.strip().lower().replace("\n", " ").replace("\t", " ")
-
-
-def extract_named_entities(text: str):
+def extract_named_entities(text):
     """
-    Extract PERSON / ORG / GPE / PRODUCT / EVENT entities with
-    confidence & context awareness.
-    Returns list of dicts: {type, value, confidence, context}
+    Extracts organizations, dates, and geopolitical entities using Spacy.
+    Optimized for low-RAM environments (Load -> Predict -> Unload).
     """
-    # ⚠️ Load model ONLY here
-    nlp = get_nlp_model()
-    
-    doc = nlp(text)
-    raw_entities = []
+    if not text:
+        return []
 
-    for ent in doc.ents:
-        if ent.label_ in {"PERSON", "ORG", "GPE", "PRODUCT", "EVENT"}:
-            # Assign confidence heuristically based on token count and capitalization
-            confidence = 0.6
-            if ent.label_ == "ORG" and any(t.is_upper for t in ent):
-                confidence += 0.2
-            if len(ent.text.split()) > 1:
-                confidence += 0.1
+    nlp = None
+    doc = None
+    entities = []
 
-            context_window = doc[max(0, ent.start - 5): min(len(doc), ent.end + 5)]
-            context = context_window.text.strip()
+    try:
+        print("⏳ Loading NER Model...")
+        # Load the small English model. 
+        # Ensure you have 'en_core_web_sm' installed in your requirements.txt
+        nlp = spacy.load("en_core_web_sm")
+        
+        # Process text
+        doc = nlp(text)
 
-            raw_entities.append({
-                "type": ent.label_,
-                "value": ent.text.strip(),
-                "normalized": normalize_entity(ent.text),
-                "confidence": round(min(confidence, 1.0), 2),
-                "context": context,
-            })
+        # Extract specific entities relevant to scams
+        target_labels = ["ORG", "GPE", "DATE", "MONEY", "PERSON"]
+        
+        entities = [
+            {
+                "text": ent.text, 
+                "label": ent.label_, 
+                "start": ent.start_char, 
+                "end": ent.end_char
+            }
+            for ent in doc.ents
+            if ent.label_ in target_labels
+        ]
 
-    # 🔁 Deduplicate based on normalized form (keep highest confidence)
-    deduped = {}
-    for e in raw_entities:
-        key = e["normalized"]
-        if key not in deduped or e["confidence"] > deduped[key]["confidence"]:
-            deduped[key] = e
+        print(f"✅ NER Found {len(entities)} entities")
 
-    return list(deduped.values())
+    except Exception as e:
+        print(f"⚠️ NER Extraction Failed: {e}")
+        # Return empty list instead of crashing
+        return []
 
+    finally:
+        # --- AGGRESSIVE CLEANUP ---
+        if nlp:
+            del nlp
+        if doc:
+            del doc
+        
+        gc.collect() # Force RAM release
+        print("✅ NER Model Unloaded")
 
-if __name__ == "__main__":
-    sample = "Test"
-    print(extract_named_entities(sample))
+    return entities
