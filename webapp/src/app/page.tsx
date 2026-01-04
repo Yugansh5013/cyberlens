@@ -76,6 +76,15 @@ export default function HomePage() {
               </Link>
 
               <Link
+                href="/fraud-predict"
+                className="group bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white px-8 py-4 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-2"
+              >
+                <AlertTriangle className="w-5 h-5" />
+                Try Fraud Detector
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+
+              <Link
                 href="/upload"
                 className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold border border-white/20 hover:border-white/40 transition-all duration-300"
               >
@@ -185,6 +194,134 @@ export default function HomePage() {
                 <p className="text-slate-400 text-sm leading-relaxed">{capability.description}</p>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* AI Fraud Prediction Feature Highlight */}
+      <section className="py-20 px-6 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+          >
+            {/* Left Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                <AlertTriangle className="w-4 h-4" />
+                AI-Powered Detection
+              </div>
+              
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                XGBoost Fraud Prediction Engine
+              </h2>
+              
+              <p className="text-lg text-slate-700 mb-6 leading-relaxed">
+                Detect procurement fraud before it happens with our Romania-trained machine learning model 
+                achieving <span className="font-bold text-red-600">R² = 0.74</span> accuracy on corruption risk prediction.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="font-semibold text-slate-900">Rule-Based Fraud Signals</p>
+                    <p className="text-slate-600 text-sm">Detects round number manipulation, single bidder patterns, cost overruns</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="font-semibold text-slate-900">Explainable AI Output</p>
+                    <p className="text-slate-600 text-sm">Feature breakdown and fraud signal severity levels for transparency</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="font-semibold text-slate-900">Batch Processing</p>
+                    <p className="text-slate-600 text-sm">Analyze multiple contracts simultaneously with aggregate statistics</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/fraud-predict"
+                  className="group bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white px-8 py-4 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-2"
+                >
+                  <AlertTriangle className="w-5 h-5" />
+                  Launch Fraud Detector
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                
+                <a
+                  href="#governance-modules"
+                  className="px-8 py-4 rounded-xl font-semibold border-2 border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-all duration-300"
+                >
+                  View All Tools
+                </a>
+              </div>
+            </div>
+
+            {/* Right Visual */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-200">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Risk Assessment</p>
+                    <p className="text-2xl font-bold text-slate-900">Contract Analysis</p>
+                  </div>
+                  <div className="text-5xl">🚨</div>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
+                    <div>
+                      <p className="font-semibold text-slate-900">Single Bidder</p>
+                      <p className="text-sm text-slate-600">High severity fraud signal</p>
+                    </div>
+                    <span className="text-xs font-bold px-2 py-1 rounded bg-red-200 text-red-800">HIGH</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                    <div>
+                      <p className="font-semibold text-slate-900">Cost Overrun 23%</p>
+                      <p className="text-sm text-slate-600">Exceeds estimate significantly</p>
+                    </div>
+                    <span className="text-xs font-bold px-2 py-1 rounded bg-yellow-200 text-yellow-800">MEDIUM</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-gray-400">
+                    <div>
+                      <p className="font-semibold text-slate-900">Round Number</p>
+                      <p className="text-sm text-slate-600">Price manipulation indicator</p>
+                    </div>
+                    <span className="text-xs font-bold px-2 py-1 rounded bg-gray-200 text-gray-800">LOW</span>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 text-white">
+                  <p className="text-sm mb-2 opacity-90">Corruption Risk Index</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-4xl font-bold">78.4%</p>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">🔴 CRITICAL</p>
+                      <p className="text-sm opacity-90">Investigation Required</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-red-200 rounded-full blur-3xl opacity-50 -z-10"></div>
+              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-orange-200 rounded-full blur-3xl opacity-50 -z-10"></div>
+            </div>
           </motion.div>
         </div>
       </section>
