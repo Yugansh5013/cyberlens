@@ -39,3 +39,17 @@ aiohttp>=3.8.0
 tqdm>=4.65.0
 
 pandas>=1.5
+
+# OCR Dependencies
+easyocr
+opencv-python-headless
+
+# NER Dependencies
+spacy
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz
+
+# Scam Classifier Dependencies
+sentence-transformers
+scikit-learn
+textblob
+joblib
