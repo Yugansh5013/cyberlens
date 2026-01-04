@@ -4,22 +4,22 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle, Upload, Database, Info } from "lucide-react";
 
+// Helper to get the API URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 export default function FraudPredictPage() {
   const [singleMode, setSingleMode] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [modelInfo, setModelInfo] = useState<any>(null);
 
-  // Single contract form state matching backend ContractInput schema
+  // Single contract form state
   const [formData, setFormData] = useState({
-    name: "",
+    contract_name: "",
+    amount: "",
+    date: "", // dd-mm-yyyy
+    bidders: "3", // Default to 3 to avoid accidental single-bidder flags
     department: "",
-    estimated_price: "",
-    final_price: "",
-    bidders: "1",
-    award_month: "6",
-    is_sunday: false,
-    is_december: false,
   });
 
   // Batch mode state
@@ -34,39 +34,53 @@ export default function FraudPredictPage() {
     setLoading(true);
     setResult(null);
     try {
-      // Validate required fields
-      if (!formData.name || !formData.estimated_price || !formData.final_price) {
-        alert("Please fill in all required fields");
-        setLoading(false);
-        return;
+      // 1. Parse Date to get Month and Sunday status
+      let award_month = 6;
+      let is_sunday = false;
+      let is_december = false;
+
+      if (formData.date) {
+        const parts = formData.date.split("-");
+        if (parts.length === 3) {
+          const day = parseInt(parts[0]);
+          const month = parseInt(parts[1]);
+          const year = parseInt(parts[2]);
+          const dateObj = new Date(year, month - 1, day);
+
+          award_month = month;
+          is_sunday = dateObj.getDay() === 0; // 0 is Sunday
+          is_december = month === 12;
+        }
       }
 
+      // 2. Prepare Payload matching Backend Schema (ContractInput)
       const payload = {
-        name: formData.name,
-        department: formData.department || undefined,
-        estimated_price: parseFloat(formData.estimated_price),
-        final_price: parseFloat(formData.final_price),
-        bidders: parseInt(formData.bidders),
-        award_month: parseInt(formData.award_month),
-        is_sunday: formData.is_sunday,
-        is_december: formData.is_december,
+        name: formData.contract_name || "Unknown Contract",
+        department: formData.department || "General",
+        estimated_price: parseFloat(formData.amount) || 0,
+        final_price: parseFloat(formData.amount) || 0, // Assuming fixed price for now
+        bidders: parseInt(formData.bidders) || 1,
+        award_month: award_month,
+        is_sunday: is_sunday,
+        is_december: is_december
       };
 
-      const res = await fetch("http://127.0.0.1:8000/api/fraud-predict", {
+      const res = await fetch(`${API_URL}/api/fraud-predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        throw new Error(`API Error: ${res.status} ${res.statusText}`);
+        const errData = await res.json();
+        throw new Error(errData.detail || "Server error");
       }
 
       const data = await res.json();
       setResult(data);
     } catch (err) {
       alert("Prediction failed: " + (err as Error).message);
-      console.error("Prediction error:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -83,7 +97,7 @@ export default function FraudPredictPage() {
       const fileContent = await batchFile.text();
       const contracts = JSON.parse(fileContent);
 
-      const res = await fetch("http://127.0.0.1:8000/api/fraud-predict/batch", {
+      const res = await fetch(`${API_URL}/api/fraud-predict/batch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contracts }),
@@ -99,7 +113,7 @@ export default function FraudPredictPage() {
 
   const fetchModelInfo = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/fraud-predict/model-info");
+      const res = await fetch(`${API_URL}/api/fraud-predict/model-info`);
       const data = await res.json();
       setModelInfo(data);
     } catch (err) {
@@ -117,7 +131,7 @@ export default function FraudPredictPage() {
           className="text-center mb-10"
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            🚨 Fraud Detection & Prediction
+            ⚖️ Fraud Detection & Prediction
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             AI-powered contract analysis to detect fraudulent patterns using machine learning models
@@ -128,21 +142,19 @@ export default function FraudPredictPage() {
         <div className="flex justify-center gap-4 mb-8">
           <button
             onClick={() => setSingleMode(true)}
-            className={`px-6 py-2 rounded-lg font-medium transition ${
-              singleMode
+            className={`px-6 py-2 rounded-lg font-medium transition ${singleMode
                 ? "bg-cyan-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-300"
-            }`}
+              }`}
           >
             Single Contract
           </button>
           <button
             onClick={() => setSingleMode(false)}
-            className={`px-6 py-2 rounded-lg font-medium transition ${
-              !singleMode
+            className={`px-6 py-2 rounded-lg font-medium transition ${!singleMode
                 ? "bg-cyan-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-300"
-            }`}
+              }`}
           >
             Batch Upload
           </button>
@@ -176,98 +188,43 @@ export default function FraudPredictPage() {
               </div>
 
               <InputField
-                label="Department"
+                label="Contract Title"
+                name="contract_name"
+                value={formData.contract_name}
+                onChange={handleInputChange}
+                placeholder="e.g., Road Construction Project Phase 1"
+              />
+              <InputField
+                label="Department / Agency"
                 name="department"
                 value={formData.department}
                 onChange={handleInputChange}
-                placeholder="e.g., Public Works Department"
+                placeholder="e.g., Ministry of Transport"
               />
-
               <InputField
-                label="Estimated Price *"
-                name="estimated_price"
+                label="Contract Value (Amount)"
+                name="amount"
                 type="number"
-                value={formData.estimated_price}
+                value={formData.amount}
                 onChange={handleInputChange}
-                placeholder="e.g., 5000000"
+                placeholder="e.g., 50000"
               />
-
               <InputField
-                label="Final Price *"
-                name="final_price"
-                type="number"
-                value={formData.final_price}
-                onChange={handleInputChange}
-                placeholder="e.g., 5500000"
-              />
-
-              <InputField
-                label="Number of Bidders *"
+                label="Number of Bidders"
                 name="bidders"
                 type="number"
                 value={formData.bidders}
                 onChange={handleInputChange}
                 placeholder="e.g., 3"
               />
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Award Month *
-                </label>
-                <select
-                  name="award_month"
-                  value={formData.award_month}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                >
-                  {[
-                    { value: 1, label: "January" },
-                    { value: 2, label: "February" },
-                    { value: 3, label: "March" },
-                    { value: 4, label: "April" },
-                    { value: 5, label: "May" },
-                    { value: 6, label: "June" },
-                    { value: 7, label: "July" },
-                    { value: 8, label: "August" },
-                    { value: 9, label: "September" },
-                    { value: 10, label: "October" },
-                    { value: 11, label: "November" },
-                    { value: 12, label: "December" },
-                  ].map((month) => (
-                    <option key={month.value} value={month.value}>
-                      {month.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="is_sunday"
-                    checked={formData.is_sunday}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_sunday: e.target.checked })
-                    }
-                    className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
-                  />
-                  <span className="text-sm text-gray-700">Awarded on Sunday</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="is_december"
-                    checked={formData.is_december}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_december: e.target.checked })
-                    }
-                    className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
-                  />
-                  <span className="text-sm text-gray-700">Awarded in December</span>
-                </label>
-              </div>
+              <InputField
+                label="Award Date (dd-mm-yyyy)"
+                name="date"
+                type="text"
+                value={formData.date}
+                onChange={handleInputChange}
+                placeholder="e.g., 25-12-2023"
+              />
             </div>
             <button
               onClick={predictSingle}
@@ -315,7 +272,7 @@ export default function FraudPredictPage() {
               disabled={loading || !batchFile}
               className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 transition"
             >
-              {loading ? "Processing..." : "🔍 Analyze Batch"}
+              {loading ? "Processing..." : "📊 Analyze Batch"}
             </button>
           </motion.div>
         )}
@@ -325,127 +282,63 @@ export default function FraudPredictPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-xl p-8 space-y-6"
+            className="bg-white rounded-2xl shadow-xl p-8"
           >
-            {/* Header with Risk Level */}
-            <div className="flex items-center justify-between border-b pb-4">
+            <div className="flex items-center gap-3 mb-6">
+              {result.risk_level === "CRITICAL" || result.risk_level === "HIGH" ? (
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              ) : (
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              )}
+              <h2 className="text-2xl font-bold">
+                Risk Level:{" "}
+                <span style={{ color: result.risk_level === "LOW" ? "green" : "red" }}>
+                  {result.risk_level} {result.risk_color}
+                </span>
+              </h2>
+            </div>
+
+            <p className="mb-4 text-gray-700">
+              <strong>Recommendation:</strong> {result.recommendation}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                  {result.contract_name}
-                </h2>
-                <p className="text-sm text-gray-500">Fraud Risk Analysis</p>
+                <p className="text-sm text-gray-500 mb-1">Risk Score (CRI)</p>
+                <p className="text-2xl font-semibold">{(result.predicted_cri * 100).toFixed(1)}%</p>
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2 justify-end mb-1">
-                  <span className="text-3xl">{result.risk_color}</span>
-                  <span
-                    className={`text-2xl font-bold ${
-                      result.risk_level === "CRITICAL"
-                        ? "text-red-600"
-                        : result.risk_level === "HIGH"
-                        ? "text-orange-600"
-                        : result.risk_level === "MODERATE"
-                        ? "text-yellow-600"
-                        : "text-green-600"
-                    }`}
-                  >
-                    {result.risk_level}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600">{result.recommendation}</p>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Contract Value</p>
+                {/* Safe access to feature breakdown */}
+                <p className="text-2xl font-semibold">
+                  {result.feature_breakdown?.price_efficiency
+                    ? "Efficiency: " + result.feature_breakdown.price_efficiency
+                    : "N/A"}
+                </p>
               </div>
             </div>
 
-            {/* Predicted CRI Score */}
-            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">
-                    Corruption Risk Index (CRI)
-                  </p>
-                  <p className="text-4xl font-bold text-cyan-700">
-                    {(result.predicted_cri * 100).toFixed(2)}%
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="w-32 h-32 rounded-full border-8 border-cyan-600 flex items-center justify-center bg-white">
-                    <span className="text-3xl font-bold text-cyan-700">
-                      {Math.round(result.predicted_cri * 100)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Fraud Signals */}
-            {result.fraud_signals && result.fraud_signals.length > 0 && (
-              <div>
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-500" />
-                  Detected Fraud Signals ({result.fraud_signals.length})
-                </h3>
-                <div className="space-y-3">
+            {result.fraud_signals && result.fraud_signals.length > 0 ? (
+              <div className="mt-6">
+                <h3 className="font-semibold text-lg mb-3">🚩 Fraud Signals Detected</h3>
+                <div className="space-y-2">
                   {result.fraud_signals.map((signal: any, idx: number) => (
                     <div
                       key={idx}
-                      className={`p-4 rounded-lg border-l-4 ${
-                        signal.severity === "high"
-                          ? "bg-red-50 border-red-500"
-                          : signal.severity === "medium"
-                          ? "bg-yellow-50 border-yellow-500"
-                          : "bg-gray-50 border-gray-400"
-                      }`}
+                      className="bg-red-50 border border-red-200 rounded-lg p-4"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-900 mb-1">
-                            {signal.signal}
-                          </p>
-                          <p className="text-sm text-gray-700">{signal.description}</p>
-                        </div>
-                        <span
-                          className={`text-xs font-bold px-2 py-1 rounded ${
-                            signal.severity === "high"
-                              ? "bg-red-200 text-red-800"
-                              : signal.severity === "medium"
-                              ? "bg-yellow-200 text-yellow-800"
-                              : "bg-gray-200 text-gray-800"
-                          }`}
-                        >
-                          {signal.severity.toUpperCase()}
-                        </span>
-                      </div>
+                      <p className="font-medium text-red-800">{signal.signal}</p>
+                      <p className="text-sm text-gray-700 mt-1">{signal.description}</p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Severity: <span className="font-medium">{signal.severity}</span>
+                      </p>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Feature Breakdown */}
-            {result.feature_breakdown && (
-              <div>
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Database className="w-5 h-5 text-cyan-600" />
-                  Feature Analysis
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(result.feature_breakdown).map(([key, value]) => (
-                    <div key={key} className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-xs text-gray-600 mb-1 capitalize">
-                        {key.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-lg font-bold text-gray-900">
-                        {typeof value === "boolean"
-                          ? value
-                            ? "Yes"
-                            : "No"
-                          : typeof value === "number"
-                          ? value.toFixed(3)
-                          : value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+            ) : (
+              <div className="mt-6 bg-green-50 border border-green-200 p-4 rounded-lg text-green-800">
+                No specific fraud signals detected.
               </div>
             )}
           </motion.div>
@@ -467,43 +360,41 @@ export default function FraudPredictPage() {
                 </p>
               </div>
               <div className="bg-red-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600">Flagged as Fraud</p>
+                <p className="text-sm text-gray-600">High/Critical Risk</p>
                 <p className="text-3xl font-bold text-red-600">
-                  {batchResults.fraud_count}
+                  {(batchResults.risk_distribution.high || 0) + (batchResults.risk_distribution.critical || 0)}
                 </p>
               </div>
               <div className="bg-green-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600">Legitimate</p>
+                <p className="text-sm text-gray-600">Low Risk</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {batchResults.legitimate_count}
+                  {batchResults.risk_distribution.low || 0}
                 </p>
               </div>
             </div>
-            <div className="space-y-4">
-              {batchResults.results.map((item: any, idx: number) => (
+
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {batchResults.predictions.map((item: any, idx: number) => (
                 <div
                   key={idx}
-                  className={`border rounded-lg p-4 ${
-                    item.prediction === "fraud"
+                  className={`border rounded-lg p-4 ${["HIGH", "CRITICAL"].includes(item.risk_level)
                       ? "bg-red-50 border-red-200"
                       : "bg-green-50 border-green-200"
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Contract #{idx + 1}</span>
+                    <span className="font-medium truncate max-w-xs">{item.contract_name}</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        item.prediction === "fraud"
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${["HIGH", "CRITICAL"].includes(item.risk_level)
                           ? "bg-red-200 text-red-800"
                           : "bg-green-200 text-green-800"
-                      }`}
+                        }`}
                     >
-                      {item.prediction.toUpperCase()}
+                      {item.risk_level}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Confidence: {(item.confidence * 100).toFixed(1)}% | Risk:{" "}
-                    {(item.fraud_probability * 100).toFixed(1)}%
+                    Risk Score: {(item.predicted_cri * 100).toFixed(1)}% | Recommendation: {item.recommendation}
                   </p>
                 </div>
               ))}
@@ -522,32 +413,22 @@ export default function FraudPredictPage() {
               <Database className="w-6 h-6" /> Model Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoCard label="Model Type" value={modelInfo.model_type} />
-              <InfoCard label="Version" value={modelInfo.version} />
-              <InfoCard label="Accuracy" value={`${(modelInfo.metrics?.accuracy * 100).toFixed(1)}%`} />
-              <InfoCard label="Precision" value={`${(modelInfo.metrics?.precision * 100).toFixed(1)}%`} />
-              <InfoCard label="Recall" value={`${(modelInfo.metrics?.recall * 100).toFixed(1)}%`} />
-              <InfoCard label="F1 Score" value={`${(modelInfo.metrics?.f1_score * 100).toFixed(1)}%`} />
+              <InfoCard label="Model Type" value={modelInfo.model_type || "Unknown"} />
+              <InfoCard label="Training Data" value={modelInfo.training_data || "N/A"} />
+              <InfoCard label="Accuracy (R²)" value={modelInfo.model_performance?.r2_score || "N/A"} />
+              <InfoCard label="Test RMSE" value={modelInfo.model_performance?.test_rmse || "N/A"} />
             </div>
-            {modelInfo.feature_importance && (
-              <div className="mt-6">
-                <h3 className="font-semibold text-lg mb-3">Feature Importance</h3>
-                <div className="space-y-2">
-                  {modelInfo.feature_importance.slice(0, 5).map((item: any, idx: number) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600 w-32">{item.feature}</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-3">
-                        <div
-                          className="bg-cyan-600 h-3 rounded-full"
-                          style={{ width: `${item.importance * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium">{(item.importance * 100).toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
+
+            <div className="mt-6">
+              <h3 className="font-semibold text-lg mb-3">Detectable Fraud Signals</h3>
+              <div className="flex flex-wrap gap-2">
+                {modelInfo.fraud_signals_detected?.map((sig: string, idx: number) => (
+                  <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                    {sig}
+                  </span>
+                ))}
               </div>
-            )}
+            </div>
           </motion.div>
         )}
       </div>
@@ -580,11 +461,17 @@ function InputField({
   );
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
+// Fixed InfoCard to handle safe rendering
+function InfoCard({ label, value }: { label: string; value: any }) {
+  const displayValue =
+    typeof value === 'boolean'
+      ? (value ? "Yes" : "No")
+      : String(value);
+
   return (
     <div className="bg-gray-50 rounded-lg p-4">
       <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-lg font-semibold text-gray-900 mt-1">{value}</p>
+      <p className="text-lg font-semibold text-gray-900 mt-1">{displayValue}</p>
     </div>
   );
 }
