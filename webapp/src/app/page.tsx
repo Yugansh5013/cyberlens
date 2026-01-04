@@ -214,13 +214,13 @@ export default function HomePage() {
                 <AlertTriangle className="w-4 h-4" />
                 AI-Powered Detection
               </div>
-              
+
               <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
                 XGBoost Fraud Prediction Engine
               </h2>
-              
+
               <p className="text-lg text-slate-700 mb-6 leading-relaxed">
-                Detect procurement fraud before it happens with our Romania-trained machine learning model 
+                Detect procurement fraud before it happens with our Romania-trained machine learning model
                 achieving <span className="font-bold text-red-600">R² = 0.74</span> accuracy on corruption risk prediction.
               </p>
 
@@ -232,7 +232,7 @@ export default function HomePage() {
                     <p className="text-slate-600 text-sm">Detects round number manipulation, single bidder patterns, cost overruns</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
                   <div>
@@ -240,7 +240,7 @@ export default function HomePage() {
                     <p className="text-slate-600 text-sm">Feature breakdown and fraud signal severity levels for transparency</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
                   <div>
@@ -259,7 +259,7 @@ export default function HomePage() {
                   Launch Fraud Detector
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                
+
                 <a
                   href="#governance-modules"
                   className="px-8 py-4 rounded-xl font-semibold border-2 border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-all duration-300"

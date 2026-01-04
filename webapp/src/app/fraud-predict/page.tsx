@@ -174,7 +174,7 @@ export default function FraudPredictPage() {
                   placeholder="e.g., Construction of Highway Bypass Section A-12"
                 />
               </div>
-              
+
               <InputField
                 label="Department"
                 name="department"
