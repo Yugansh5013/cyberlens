@@ -1,25 +1,15 @@
-// =============================
-// CYBERLENS FRONTEND API WRAPPER
-// =============================
-//
-// This file provides a single, unified Axios interface
-// to communicate with all backend APIs (FastAPI).
-//
-// Endpoints covered:
-//  - Upload evidence
-//  - Analyze case
-//  - Generate report / unified report
-//  - Search cases
-//  - Top entities / case clusters
-//  - Entity intelligence profile
-//  - Batch analyze
-//
-// =============================
-
 import axios from "axios";
 
-// 🌍 Base URL — update in .env.local
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+// 🌍 Base URL — Logic to ensure it always ends in '/api'
+let envUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+
+// Remove trailing slash if present (e.g., "...onrender.com/")
+envUrl = envUrl.replace(/\/$/, "");
+
+// Append '/api' if it's not already there
+const BASE_URL = envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+
+console.log("🔗 API Base URL set to:", BASE_URL); // Debug log
 
 // Axios instance
 const api = axios.create({
