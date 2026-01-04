@@ -7,7 +7,10 @@ import { useCyberLensStore } from "@/lib/store";
 import { getEntityProfile, generateReport, openPdfBlob } from "@/lib/api";
 
 export default function EntityProfilePage() {
-  const { id } = useParams(); // id is URL encoded
+  const params = useParams();
+  // FIXED: Ensure 'id' is always a string, even if Next.js returns an array
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const { setNotification, setLoading } = useCyberLensStore();
 
   const [profile, setProfile] = useState<any | null>(null);
@@ -38,7 +41,7 @@ export default function EntityProfilePage() {
       }
     }
     fetchProfile();
-  }, [id]);
+  }, [id, setNotification, setLoading]); // Added dependencies for stability
 
   async function downloadReportForCase(file_id: string) {
     try {
@@ -59,7 +62,7 @@ export default function EntityProfilePage() {
     <main className="max-w-6xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-2">Entity Intelligence Profile</h1>
       <p className="text-gray-600 mb-6">
-        Deep OSINT & case footprint for <b>{decodeURIComponent(id)}</b>
+        Deep OSINT & case footprint for <b>{id ? decodeURIComponent(id) : ""}</b>
       </p>
 
       {error && (
