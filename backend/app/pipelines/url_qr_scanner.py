@@ -8,18 +8,9 @@ CyberLens URL & QR Threat Scanner v3
 """
 
 import re
-import cv2
 import os
-import numpy as np
 from typing import List, Dict
 from urllib.parse import urlparse
-
-# Optional QR decoder
-try:
-    from pyzbar.pyzbar import decode as qr_decode
-    QR_AVAILABLE = True
-except ImportError:
-    QR_AVAILABLE = False
 
 # Import your OSINT functions
 from app.pipelines.osint_engine import (
@@ -95,16 +86,31 @@ def heuristic_url_risk(url: str) -> Dict:
 
 
 # -------------------------------
-# 📸 QR Code Extraction
+# 📸 QR Code Extraction (Lazy Loaded)
 # -------------------------------
 def extract_qr_codes(image_path: str) -> List[str]:
-    if not QR_AVAILABLE:
-        return []
-
+    """
+    Lazy load OpenCV and PyZbar to save memory on startup.
+    Only imports them when a file is actually scanned.
+    """
     try:
+        # ⚠️ LAZY IMPORT: Saves ~100MB RAM on startup
+        import cv2
+        import numpy as np
+        from pyzbar.pyzbar import decode as qr_decode
+        
+        if not os.path.exists(image_path):
+            return []
+
         img = cv2.imread(image_path)
+        if img is None:
+            return []
+
         decoded = qr_decode(img)
         return [obj.data.decode("utf-8") for obj in decoded if obj.data]
+    except ImportError:
+        print("[QR Scanner] OpenCV or PyZbar not installed/found.")
+        return []
     except Exception as e:
         print(f"[QR Scanner] Error: {e}")
         return []

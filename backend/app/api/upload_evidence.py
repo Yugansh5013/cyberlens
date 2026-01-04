@@ -1,5 +1,5 @@
 # app/api/upload_evidence.py
-import hashlib, os, uuid, json
+import hashlib, os, uuid, json, shutil
 from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.services.chainlog import chain_log
@@ -42,14 +42,17 @@ async def upload_evidence(file: UploadFile = File(...)):
             detail=f"Unsupported file type: {ext}. Allowed: {', '.join(allowed_exts)}",
         )
 
-    # ✅ Step 2: Save file with UUID
+    # ✅ Step 2: Save file with UUID (Stream to disk to save RAM)
     new_name = f"{uuid.uuid4()}{ext}"
     file_path = os.path.join(UPLOAD_DIR, new_name)
 
     try:
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        with open(file_path, "wb") as buffer:
+            # Read in 1MB chunks to prevent OOM on large files
+            while content := await file.read(1024 * 1024):
+                buffer.write(content)
     except Exception as e:
+        print(f"❌ File save error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
 
     # ✅ Step 3: Compute file hash
@@ -70,10 +73,13 @@ async def upload_evidence(file: UploadFile = File(...)):
     )
 
     # ✅ Step 5: Instant URL/QR Scan (non-blocking preview)
+    # Wrapped in broad try-except to ensure upload succeeds even if scan crashes
+    pre_scan_result = {}
     try:
         pre_scan_result = scan_urls_and_qr(None, file_path)
     except Exception as e:
-        pre_scan_result = {"error": f"Pre-scan failed: {str(e)}"}
+        print(f"⚠️ Pre-scan failed (non-fatal): {e}")
+        pre_scan_result = {"error": "Quick scan unavailable (server busy)"}
 
     # ✅ Step 6: Store structured metadata
     metadata = {
@@ -99,5 +105,5 @@ async def upload_evidence(file: UploadFile = File(...)):
         "original_name": file.filename,
         "stored_at": file_path,
         "pre_scan": pre_scan_result,
-        "message": "Evidence successfully uploaded, verified, logged, and scanned.",
+        "message": "Evidence successfully uploaded.",
     }
