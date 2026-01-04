@@ -1,11 +1,10 @@
 import spacy
 from collections import defaultdict
 
-# ⚠️ LAZY LOADING GLOBAL VARIABLE
+# ⚠️ LAZY LOAD GLOBAL
 _nlp_model = None
 
 def get_nlp_model():
-    """Load spaCy model only when needed to save startup RAM."""
     global _nlp_model
     if _nlp_model is None:
         try:
@@ -30,7 +29,7 @@ def extract_named_entities(text: str):
     confidence & context awareness.
     Returns list of dicts: {type, value, confidence, context}
     """
-    # Load model here, not at top level
+    # ⚠️ Load model ONLY here
     nlp = get_nlp_model()
     
     doc = nlp(text)

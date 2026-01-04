@@ -86,30 +86,22 @@ def heuristic_url_risk(url: str) -> Dict:
 
 
 # -------------------------------
-# 📸 QR Code Extraction (Lazy Loaded)
+# 📸 QR Code Extraction (LAZY LOADED)
 # -------------------------------
 def extract_qr_codes(image_path: str) -> List[str]:
-    """
-    Lazy load OpenCV and PyZbar to save memory on startup.
-    Only imports them when a file is actually scanned.
-    """
     try:
-        # ⚠️ LAZY IMPORT: Saves ~100MB RAM on startup
+        # ⚠️ IMPORT HERE ONLY WHEN NEEDED
         import cv2
-        import numpy as np
         from pyzbar.pyzbar import decode as qr_decode
         
-        if not os.path.exists(image_path):
-            return []
-
         img = cv2.imread(image_path)
-        if img is None:
+        if img is None: 
             return []
-
+            
         decoded = qr_decode(img)
         return [obj.data.decode("utf-8") for obj in decoded if obj.data]
     except ImportError:
-        print("[QR Scanner] OpenCV or PyZbar not installed/found.")
+        print("[QR Scanner] OpenCV/Pyzbar not installed or not found.")
         return []
     except Exception as e:
         print(f"[QR Scanner] Error: {e}")
@@ -120,10 +112,6 @@ def extract_qr_codes(image_path: str) -> List[str]:
 # 🌐 OSINT Enrichment
 # -------------------------------
 def osint_enrich(domain_or_url: str) -> Dict:
-    """
-    Combine multiple OSINT lookups for richer context.
-    Uses local fallbacks when no API key available.
-    """
     try:
         parsed = urlparse(domain_or_url)
         domain = parsed.netloc or domain_or_url
@@ -151,6 +139,7 @@ def osint_enrich(domain_or_url: str) -> Dict:
 # -------------------------------
 def scan_urls_and_qr(text: str, image_path: str) -> List[Dict]:
     urls = extract_urls(text or "")
+    # Only try extracting QR if image path is provided
     qr_links = extract_qr_codes(image_path) if image_path else []
 
     all_links = list(set(urls + qr_links))
@@ -162,7 +151,6 @@ def scan_urls_and_qr(text: str, image_path: str) -> List[Dict]:
         heuristics = heuristic_url_risk(link)
         osint = osint_enrich(link)
 
-        # Blend heuristic + OSINT risk perception
         final_risk = heuristics["risk_score"]
         if isinstance(osint, dict):
             vt_domain_risk = osint.get("virustotal_domain", {}).get("risk", "Low")

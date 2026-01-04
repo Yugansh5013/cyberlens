@@ -3,7 +3,7 @@ CyberLens Hybrid Scam Classifier v2
 -----------------------------------
 Combines:
 ✅ ML (TF-IDF + Logistic Regression)
-✅ Deep Embeddings (Sentence-BERT) - LAZY LOADED
+✅ Deep Embeddings (Sentence-BERT)
 ✅ Keyword + Tone Heuristics
 ✅ Explainable Fraud Signals
 """
@@ -70,15 +70,11 @@ def ensure_model_loaded():
 
 
 def load_models():
-    """
-    Lazy load models to save RAM on startup.
-    Imports sentence_transformers ONLY when this function is called.
-    """
     ensure_model_loaded()
     model = joblib.load(MODEL_PATH)
     vectorizer = joblib.load(VECTORIZER_PATH)
     
-    # ⚠️ LAZY IMPORT: Prevents PyTorch from eating RAM at startup
+    # ⚠️ LAZY LOAD EMBEDDER (PyTorch)
     from sentence_transformers import SentenceTransformer
     embedder = SentenceTransformer(EMBEDDING_MODEL)
     
@@ -111,9 +107,9 @@ def detect_urgency_and_financial_terms(text: str):
 def classify_scam(text: str):
     """Perform hybrid AI + semantic + heuristic classification."""
     
-    # ⚠️ Import 'util' here to avoid top-level dependency
+    # ⚠️ IMPORT HERE
     from sentence_transformers import util
-
+    
     model, vectorizer, embedder = load_models()
     text_clean = clean_text(text)
 
