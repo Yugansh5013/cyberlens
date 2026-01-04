@@ -4,6 +4,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle, Upload, Database, Info } from "lucide-react";
 
+// Helper to get the API URL (uses env var in prod, localhost in dev)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 export default function FraudPredictPage() {
   const [singleMode, setSingleMode] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -32,13 +35,13 @@ export default function FraudPredictPage() {
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/fraud-predict", {
+      const res = await fetch(`${API_URL}/api/fraud-predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           amount: parseFloat(formData.amount),
-          duration_days: parseInt(formData.date),
+          duration_days: parseInt(formData.date), // Ensure backend handles this conversion
         }),
       });
       const data = await res.json();
@@ -61,7 +64,7 @@ export default function FraudPredictPage() {
       const fileContent = await batchFile.text();
       const contracts = JSON.parse(fileContent);
 
-      const res = await fetch("http://127.0.0.1:8000/api/fraud-predict/batch", {
+      const res = await fetch(`${API_URL}/api/fraud-predict/batch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contracts }),
@@ -77,7 +80,7 @@ export default function FraudPredictPage() {
 
   const fetchModelInfo = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/fraud-predict/model-info");
+      const res = await fetch(`${API_URL}/api/fraud-predict/model-info`);
       const data = await res.json();
       setModelInfo(data);
     } catch (err) {
@@ -95,7 +98,7 @@ export default function FraudPredictPage() {
           className="text-center mb-10"
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            🚨 Fraud Detection & Prediction
+            ⚖️ Fraud Detection & Prediction
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             AI-powered contract analysis to detect fraudulent patterns using machine learning models
@@ -106,21 +109,19 @@ export default function FraudPredictPage() {
         <div className="flex justify-center gap-4 mb-8">
           <button
             onClick={() => setSingleMode(true)}
-            className={`px-6 py-2 rounded-lg font-medium transition ${
-              singleMode
+            className={`px-6 py-2 rounded-lg font-medium transition ${singleMode
                 ? "bg-cyan-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-300"
-            }`}
+              }`}
           >
             Single Contract
           </button>
           <button
             onClick={() => setSingleMode(false)}
-            className={`px-6 py-2 rounded-lg font-medium transition ${
-              !singleMode
+            className={`px-6 py-2 rounded-lg font-medium transition ${!singleMode
                 ? "bg-cyan-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-300"
-            }`}
+              }`}
           >
             Batch Upload
           </button>
@@ -235,7 +236,7 @@ export default function FraudPredictPage() {
               disabled={loading || !batchFile}
               className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 transition"
             >
-              {loading ? "Processing..." : "🔍 Analyze Batch"}
+              {loading ? "Processing..." : "📊 Analyze Batch"}
             </button>
           </motion.div>
         )}
@@ -330,20 +331,18 @@ export default function FraudPredictPage() {
               {batchResults.results.map((item: any, idx: number) => (
                 <div
                   key={idx}
-                  className={`border rounded-lg p-4 ${
-                    item.prediction === "fraud"
+                  className={`border rounded-lg p-4 ${item.prediction === "fraud"
                       ? "bg-red-50 border-red-200"
                       : "bg-green-50 border-green-200"
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Contract #{idx + 1}</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        item.prediction === "fraud"
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${item.prediction === "fraud"
                           ? "bg-red-200 text-red-800"
                           : "bg-green-200 text-green-800"
-                      }`}
+                        }`}
                     >
                       {item.prediction.toUpperCase()}
                     </span>
@@ -427,11 +426,18 @@ function InputField({
   );
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
+// FIXED: InfoCard now handles 'any' type safely
+function InfoCard({ label, value }: { label: string; value: any }) {
+  // Safe rendering logic to avoid "unknown" type errors
+  const displayValue =
+    typeof value === 'boolean'
+      ? (value ? "Yes" : "No")
+      : String(value);
+
   return (
     <div className="bg-gray-50 rounded-lg p-4">
       <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-lg font-semibold text-gray-900 mt-1">{value}</p>
+      <p className="text-lg font-semibold text-gray-900 mt-1">{displayValue}</p>
     </div>
   );
 }
