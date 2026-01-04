@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle, Upload, Database, Info } from "lucide-react";
 
-// Helper to get the API URL (uses env var in prod, localhost in dev)
+// Helper to get the API URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export default function FraudPredictPage() {
@@ -15,12 +15,11 @@ export default function FraudPredictPage() {
 
   // Single contract form state
   const [formData, setFormData] = useState({
-    contract_type: "",
+    contract_name: "",
     amount: "",
-    date: "",
-    counterparty_name: "",
-    counterparty_country: "",
-    industry: "",
+    date: "", // dd-mm-yyyy
+    bidders: "3", // Default to 3 to avoid accidental single-bidder flags
+    department: "",
   });
 
   // Batch mode state
@@ -35,19 +34,53 @@ export default function FraudPredictPage() {
     setLoading(true);
     setResult(null);
     try {
+      // 1. Parse Date to get Month and Sunday status
+      let award_month = 6;
+      let is_sunday = false;
+      let is_december = false;
+
+      if (formData.date) {
+        const parts = formData.date.split("-");
+        if (parts.length === 3) {
+          const day = parseInt(parts[0]);
+          const month = parseInt(parts[1]);
+          const year = parseInt(parts[2]);
+          const dateObj = new Date(year, month - 1, day);
+
+          award_month = month;
+          is_sunday = dateObj.getDay() === 0; // 0 is Sunday
+          is_december = month === 12;
+        }
+      }
+
+      // 2. Prepare Payload matching Backend Schema (ContractInput)
+      const payload = {
+        name: formData.contract_name || "Unknown Contract",
+        department: formData.department || "General",
+        estimated_price: parseFloat(formData.amount) || 0,
+        final_price: parseFloat(formData.amount) || 0, // Assuming fixed price for now
+        bidders: parseInt(formData.bidders) || 1,
+        award_month: award_month,
+        is_sunday: is_sunday,
+        is_december: is_december
+      };
+
       const res = await fetch(`${API_URL}/api/fraud-predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          amount: parseFloat(formData.amount),
-          duration_days: parseInt(formData.date), // Ensure backend handles this conversion
-        }),
+        body: JSON.stringify(payload),
       });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || "Server error");
+      }
+
       const data = await res.json();
       setResult(data);
     } catch (err) {
       alert("Prediction failed: " + (err as Error).message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -145,14 +178,21 @@ export default function FraudPredictPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputField
-                label="Contract Type"
-                name="contract_type"
-                value={formData.contract_type}
+                label="Contract Title"
+                name="contract_name"
+                value={formData.contract_name}
                 onChange={handleInputChange}
-                placeholder="e.g., service_agreement"
+                placeholder="e.g., Road Construction Project Phase 1"
               />
               <InputField
-                label="Amount"
+                label="Department / Agency"
+                name="department"
+                value={formData.department}
+                onChange={handleInputChange}
+                placeholder="e.g., Ministry of Transport"
+              />
+              <InputField
+                label="Contract Value (Amount)"
                 name="amount"
                 type="number"
                 value={formData.amount}
@@ -160,34 +200,20 @@ export default function FraudPredictPage() {
                 placeholder="e.g., 50000"
               />
               <InputField
-                label="Date (dd-mm-yyyy)"
+                label="Number of Bidders"
+                name="bidders"
+                type="number"
+                value={formData.bidders}
+                onChange={handleInputChange}
+                placeholder="e.g., 3"
+              />
+              <InputField
+                label="Award Date (dd-mm-yyyy)"
                 name="date"
                 type="text"
                 value={formData.date}
                 onChange={handleInputChange}
-                placeholder="e.g., 01-01-2023"
-              />
-              <InputField
-                label="Counterparty Name"
-                name="counterparty_name"
-                value={formData.counterparty_name}
-                onChange={handleInputChange}
-                placeholder="e.g., ABC Corp"
-              />
-              <InputField
-                label="Counterparty Country"
-                name="counterparty_country"
-                value={formData.counterparty_country}
-                onChange={handleInputChange}
-                placeholder="e.g., USA"
-              />
-
-              <InputField
-                label="Industry"
-                name="industry"
-                value={formData.industry}
-                onChange={handleInputChange}
-                placeholder="e.g., technology"
+                placeholder="e.g., 25-12-2023"
               />
             </div>
             <button
@@ -249,35 +275,40 @@ export default function FraudPredictPage() {
             className="bg-white rounded-2xl shadow-xl p-8"
           >
             <div className="flex items-center gap-3 mb-6">
-              {result.prediction === "fraud" ? (
+              {result.risk_level === "CRITICAL" || result.risk_level === "HIGH" ? (
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               ) : (
                 <CheckCircle className="w-8 h-8 text-green-500" />
               )}
               <h2 className="text-2xl font-bold">
-                Prediction:{" "}
-                <span
-                  className={
-                    result.prediction === "fraud" ? "text-red-600" : "text-green-600"
-                  }
-                >
-                  {result.prediction.toUpperCase()}
+                Risk Level:{" "}
+                <span style={{ color: result.risk_level === "LOW" ? "green" : "red" }}>
+                  {result.risk_level} {result.risk_color}
                 </span>
               </h2>
             </div>
+
+            <p className="mb-4 text-gray-700">
+              <strong>Recommendation:</strong> {result.recommendation}
+            </p>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Confidence</p>
-                <p className="text-2xl font-semibold">{(result.confidence * 100).toFixed(1)}%</p>
+                <p className="text-sm text-gray-500 mb-1">Risk Score (CRI)</p>
+                <p className="text-2xl font-semibold">{(result.predicted_cri * 100).toFixed(1)}%</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Risk Score</p>
-                <p className="text-2xl font-semibold text-red-600">
-                  {(result.fraud_probability * 100).toFixed(1)}%
+                <p className="text-sm text-gray-500 mb-1">Contract Value</p>
+                {/* Safe access to feature breakdown */}
+                <p className="text-2xl font-semibold">
+                  {result.feature_breakdown?.price_efficiency
+                    ? "Efficiency: " + result.feature_breakdown.price_efficiency
+                    : "N/A"}
                 </p>
               </div>
             </div>
-            {result.fraud_signals && result.fraud_signals.length > 0 && (
+
+            {result.fraud_signals && result.fraud_signals.length > 0 ? (
               <div className="mt-6">
                 <h3 className="font-semibold text-lg mb-3">🚩 Fraud Signals Detected</h3>
                 <div className="space-y-2">
@@ -286,7 +317,7 @@ export default function FraudPredictPage() {
                       key={idx}
                       className="bg-red-50 border border-red-200 rounded-lg p-4"
                     >
-                      <p className="font-medium text-red-800">{signal.signal_type}</p>
+                      <p className="font-medium text-red-800">{signal.signal}</p>
                       <p className="text-sm text-gray-700 mt-1">{signal.description}</p>
                       <p className="text-xs text-gray-500 mt-2">
                         Severity: <span className="font-medium">{signal.severity}</span>
@@ -294,6 +325,10 @@ export default function FraudPredictPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="mt-6 bg-green-50 border border-green-200 p-4 rounded-lg text-green-800">
+                No specific fraud signals detected.
               </div>
             )}
           </motion.div>
@@ -315,41 +350,41 @@ export default function FraudPredictPage() {
                 </p>
               </div>
               <div className="bg-red-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600">Flagged as Fraud</p>
+                <p className="text-sm text-gray-600">High/Critical Risk</p>
                 <p className="text-3xl font-bold text-red-600">
-                  {batchResults.fraud_count}
+                  {(batchResults.risk_distribution.high || 0) + (batchResults.risk_distribution.critical || 0)}
                 </p>
               </div>
               <div className="bg-green-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600">Legitimate</p>
+                <p className="text-sm text-gray-600">Low Risk</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {batchResults.legitimate_count}
+                  {batchResults.risk_distribution.low || 0}
                 </p>
               </div>
             </div>
-            <div className="space-y-4">
-              {batchResults.results.map((item: any, idx: number) => (
+
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {batchResults.predictions.map((item: any, idx: number) => (
                 <div
                   key={idx}
-                  className={`border rounded-lg p-4 ${item.prediction === "fraud"
+                  className={`border rounded-lg p-4 ${["HIGH", "CRITICAL"].includes(item.risk_level)
                       ? "bg-red-50 border-red-200"
                       : "bg-green-50 border-green-200"
                     }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Contract #{idx + 1}</span>
+                    <span className="font-medium truncate max-w-xs">{item.contract_name}</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${item.prediction === "fraud"
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${["HIGH", "CRITICAL"].includes(item.risk_level)
                           ? "bg-red-200 text-red-800"
                           : "bg-green-200 text-green-800"
                         }`}
                     >
-                      {item.prediction.toUpperCase()}
+                      {item.risk_level}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Confidence: {(item.confidence * 100).toFixed(1)}% | Risk:{" "}
-                    {(item.fraud_probability * 100).toFixed(1)}%
+                    Risk Score: {(item.predicted_cri * 100).toFixed(1)}% | Recommendation: {item.recommendation}
                   </p>
                 </div>
               ))}
@@ -368,32 +403,22 @@ export default function FraudPredictPage() {
               <Database className="w-6 h-6" /> Model Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoCard label="Model Type" value={modelInfo.model_type} />
-              <InfoCard label="Version" value={modelInfo.version} />
-              <InfoCard label="Accuracy" value={`${(modelInfo.metrics?.accuracy * 100).toFixed(1)}%`} />
-              <InfoCard label="Precision" value={`${(modelInfo.metrics?.precision * 100).toFixed(1)}%`} />
-              <InfoCard label="Recall" value={`${(modelInfo.metrics?.recall * 100).toFixed(1)}%`} />
-              <InfoCard label="F1 Score" value={`${(modelInfo.metrics?.f1_score * 100).toFixed(1)}%`} />
+              <InfoCard label="Model Type" value={modelInfo.model_type || "Unknown"} />
+              <InfoCard label="Training Data" value={modelInfo.training_data || "N/A"} />
+              <InfoCard label="Accuracy (R²)" value={modelInfo.model_performance?.r2_score || "N/A"} />
+              <InfoCard label="Test RMSE" value={modelInfo.model_performance?.test_rmse || "N/A"} />
             </div>
-            {modelInfo.feature_importance && (
-              <div className="mt-6">
-                <h3 className="font-semibold text-lg mb-3">Feature Importance</h3>
-                <div className="space-y-2">
-                  {modelInfo.feature_importance.slice(0, 5).map((item: any, idx: number) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600 w-32">{item.feature}</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-3">
-                        <div
-                          className="bg-cyan-600 h-3 rounded-full"
-                          style={{ width: `${item.importance * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium">{(item.importance * 100).toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
+
+            <div className="mt-6">
+              <h3 className="font-semibold text-lg mb-3">Detectable Fraud Signals</h3>
+              <div className="flex flex-wrap gap-2">
+                {modelInfo.fraud_signals_detected?.map((sig: string, idx: number) => (
+                  <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                    {sig}
+                  </span>
+                ))}
               </div>
-            )}
+            </div>
           </motion.div>
         )}
       </div>
@@ -426,9 +451,8 @@ function InputField({
   );
 }
 
-// FIXED: InfoCard now handles 'any' type safely
+// Fixed InfoCard to handle safe rendering
 function InfoCard({ label, value }: { label: string; value: any }) {
-  // Safe rendering logic to avoid "unknown" type errors
   const displayValue =
     typeof value === 'boolean'
       ? (value ? "Yes" : "No")
