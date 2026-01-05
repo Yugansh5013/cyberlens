@@ -21,10 +21,12 @@ export default function Navbar() {
   ];
 
   const mainNavItems = [
-    { name: "Dashboard", href: "/dashboard" },
-    { name: "Upload", href: "/upload" },
+    { name: "public fraud", href: "/dashboard" },
+    { name: "Contract fraud", href: "/contract" },
     { name: "Fraud Predict", href: "/fraud-predict" },
-    { name: "Reports", href: "/report/unified" },
+    { name: "goverment spending", href: "/fiscal" },
+    { name: "procurement", href: "/procurement" },
+    { name: "welfare", href: "/welfare" },
   ];
 
   return (
@@ -48,11 +50,10 @@ export default function Navbar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive(item.href)
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(item.href)
                       ? "bg-cyan-500/20 text-cyan-300"
                       : "text-slate-300 hover:text-white hover:bg-white/5"
-                  }`}
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -66,17 +67,15 @@ export default function Navbar() {
               onMouseLeave={() => setIsGovernanceOpen(false)}
             >
               <button
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-                  ["/fiscal", "/procurement", "/welfare"].some((path) => pathname.startsWith(path))
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${["/fiscal", "/procurement", "/welfare"].some((path) => pathname.startsWith(path))
                     ? "bg-cyan-500/20 text-cyan-300"
                     : "text-slate-300 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 Governance Analytics
                 <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    isGovernanceOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 transition-transform duration-200 ${isGovernanceOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -87,11 +86,9 @@ export default function Navbar() {
                     <Link
                       key={module.href}
                       href={module.href}
-                      className={`block px-5 py-4 hover:bg-slate-700/50 transition-colors ${
-                        index !== governanceModules.length - 1 ? "border-b border-slate-700/50" : ""
-                      } ${
-                        isActive(module.href) ? "bg-cyan-500/10" : ""
-                      }`}
+                      className={`block px-5 py-4 hover:bg-slate-700/50 transition-colors ${index !== governanceModules.length - 1 ? "border-b border-slate-700/50" : ""
+                        } ${isActive(module.href) ? "bg-cyan-500/10" : ""
+                        }`}
                     >
                       <div className="font-semibold text-white text-sm mb-1">
                         {module.name}

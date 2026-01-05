@@ -54,7 +54,7 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-blue-200">
-              SatyaSetu.AI
+              Cyberlens
             </h1>
 
             <p className="text-xl md:text-2xl font-semibold mb-4 text-cyan-100">
@@ -62,7 +62,7 @@ export default function HomePage() {
             </p>
 
             <p className="text-lg text-slate-300 leading-relaxed max-w-3xl mx-auto mb-10">
-              SatyaSetu.AI is a intelligence platform that uses AI and statistical forensics to turn government data and digital evidence into clear, explainable audit signals for fraud detection and public accountability.
+              Cyberlens is a intelligence platform that uses AI and statistical forensics to turn government data and digital evidence into clear, explainable audit signals for fraud detection and public accountability.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
