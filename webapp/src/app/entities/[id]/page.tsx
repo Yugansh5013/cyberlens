@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import RiskMeter from "@/components/RiskMeter";
-import { useCyberLensStore } from "@/lib/store";
+import { useSatyaSetuAIStore } from "@/lib/store";
 import { getEntityProfile, generateReport, openPdfBlob } from "@/lib/api";
 
 export default function EntityProfilePage() {
@@ -11,7 +11,7 @@ export default function EntityProfilePage() {
   // FIXED: Ensure 'id' is always a string, even if Next.js returns an array
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const { setNotification, setLoading } = useCyberLensStore();
+  const { setNotification, setLoading } = useSatyaSetuAIStore();
 
   const [profile, setProfile] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);

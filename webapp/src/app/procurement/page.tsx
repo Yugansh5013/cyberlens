@@ -30,7 +30,7 @@ export default function ProcurementDashboardPage() {
     try {
       const data = await getDashboardData();
       setDashboardData(data);
-      
+
       // Check if we're using mock data (rough heuristic)
       if (data.summary?.tenders_analyzed === 4523) {
         setUsingMockData(true);
@@ -182,7 +182,7 @@ export default function ProcurementDashboardPage() {
             className="mt-12 text-center text-sm text-gray-600 border-t border-gray-200 pt-8"
           >
             <p>
-              Built with CyberLens AI Forensics Platform | Data updated:{" "}
+              Built with SatyaSetu.AI Forensics Platform | Data updated:{" "}
               {new Date().toLocaleDateString("en-IN")}
             </p>
             <p className="mt-2">

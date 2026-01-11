@@ -40,7 +40,7 @@ export default function Navbar() {
           >
             <Shield className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-100">
-              CyberLens
+              SatyaSetu.AI
             </span>
           </Link>
 

@@ -4,14 +4,14 @@ import { useState } from "react";
 import EvidenceUploader from "@/components/EvidenceUploader";
 import RiskMeter from "@/components/RiskMeter";
 import EntityCard from "@/components/EntityCard";
-import { useCyberLensStore } from "@/lib/store";
+import { useSatyaSetuAIStore } from "@/lib/store";
 import { uploadEvidence, analyzeEvidence } from "@/lib/api";
 
 
 export default function UploadPage() {
   const router = useRouter();
   const { setLoading, setNotification, setAnalysis, setCaseId, isLoading } =
-    useCyberLensStore();
+    useSatyaSetuAIStore();
 
   const [result, setResult] = useState<any | null>(null);
 
@@ -45,11 +45,11 @@ export default function UploadPage() {
   return (
     <main className="max-w-5xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        🧠 CyberLens AI Evidence Analyzer
+        🧠 SatyaSetu.AI Evidence Analyzer
       </h1>
       <p className="text-gray-600 mb-8">
         Upload any digital evidence (image, document, or screenshot).
-        CyberLens automatically extracts text, detects scams, classifies risks,
+        SatyaSetu.AI automatically extracts text, detects scams, classifies risks,
         and performs OSINT + QR/URL intelligence analysis.
       </p>
       <p className="text-red-600 mb-8">

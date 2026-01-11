@@ -54,7 +54,7 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-100 to-blue-200">
-              Cyberlens
+              SatyaSetu.AI
             </h1>
 
             <p className="text-xl md:text-2xl font-semibold mb-4 text-cyan-100">
@@ -62,7 +62,7 @@ export default function HomePage() {
             </p>
 
             <p className="text-lg text-slate-300 leading-relaxed max-w-3xl mx-auto mb-10">
-              Cyberlens is a intelligence platform that uses AI and statistical forensics to turn government data and digital evidence into clear, explainable audit signals for fraud detection and public accountability.
+              SatyaSetu.AI is a intelligence platform that uses AI and statistical forensics to turn government data and digital evidence into clear, explainable audit signals for fraud detection and public accountability.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
@@ -409,7 +409,7 @@ export default function HomePage() {
       <footer className="bg-slate-900 text-slate-400 py-12 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-sm mb-2">
-            CyberLens © 2026 — AI-Powered Digital Forensics Pipeline
+          SatyaSetu.AI © 2026 — AI-Powered Digital Forensics Pipeline
           </p>
           <p className="text-xs text-slate-500">
             Built with Next.js 16, FastAPI, and Machine Learning • For official use by authorized government agencies

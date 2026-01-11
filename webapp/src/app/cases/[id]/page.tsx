@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import RiskMeter from "@/components/RiskMeter";
 import EntityCard from "@/components/EntityCard";
-import { useCyberLensStore } from "@/lib/store";
+import { useSatyaSetuAIStore } from "@/lib/store";
 import {
   getCaseFromCache,
   analyzeEvidence,
@@ -16,7 +16,7 @@ import DownloadReportButton from "@/components/DownloadReportButton";
 export default function CaseAnalysisPage() {
   const { id } = useParams();
   const { getCaseData, setAnalysis, setNotification, setLoading, isLoading } =
-    useCyberLensStore();
+    useSatyaSetuAIStore();
 
   const [caseData, setCaseData] = useState<any | null>(null);
 

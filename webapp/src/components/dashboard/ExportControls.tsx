@@ -24,7 +24,7 @@ export default function ExportControls({
 
       // Create a simple text summary for demo
       const summary = `
-CYBERLENS PROCUREMENT FRAUD DETECTION REPORT
+SATYASETU.AI PROCUREMENT FRAUD DETECTION REPORT
 ============================================
 
 EXECUTIVE SUMMARY

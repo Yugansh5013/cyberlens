@@ -5,7 +5,7 @@ import ChartCard from "@/components/ChartCard";
 import CaseTable from "@/components/CaseTable";
 import RiskMeter from "@/components/RiskMeter";
 import { getTopEntities, getAllCases } from "@/lib/api";
-import { useCyberLensStore } from "@/lib/store";
+import { useSatyaSetuAIStore } from "@/lib/store";
 import { Activity, ShieldAlert, TrendingUp, Database } from "lucide-react";
 import {
   PieChart,
@@ -25,7 +25,7 @@ import Link from 'next/link';
 
 
 export default function DashboardPage() {
-  const { setNotification, setLoading, isLoading } = useCyberLensStore();
+  const { setNotification, setLoading, isLoading } = useSatyaSetuAIStore();
   const [topEntities, setTopEntities] = useState<any[]>([]);
   const [recentCases, setRecentCases] = useState<any[]>([]);
   const [avgRisk, setAvgRisk] = useState<number>(0);
@@ -83,7 +83,7 @@ export default function DashboardPage() {
   return (
     <main className="max-w-7xl mx-auto px-6 py-10 font-inter ">
       <h1 className="text-4xl font-bold text-gray-800 mb-3 tracking-tight">
-        📊 CyberLens Intelligence Dashboard
+        📊 SatyaSetu.AI Intelligence Dashboard
       </h1>
       <p className="text-gray-600 mb-10 text-base">
         Real-time overview of all analyzed cases, scam categories, and digital risk distribution across your intelligence network.

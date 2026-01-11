@@ -14,7 +14,7 @@ interface AnalysisData {
   analyzed_at?: string;
 }
 
-interface CyberLensState {
+interface SatyaSetuAIState {
   // Core case data
   currentCaseId: string | null;
   analysisCache: Record<string, AnalysisData>;
@@ -37,7 +37,7 @@ interface CyberLensState {
 // ------------------------------
 // ⚙️ Store Implementation
 // ------------------------------
-export const useCyberLensStore = create<CyberLensState>()(
+export const useSatyaSetuAIStore = create<SatyaSetuAIState>()(
   persist(
     (set, get) => ({
       // --- State defaults ---
@@ -69,7 +69,7 @@ export const useCyberLensStore = create<CyberLensState>()(
       getCaseData: (id) => get().analysisCache[id] || null,
     }),
     {
-      name: "cyberlens-storage", // 🔐 LocalStorage key
+      name: "satya-setu-ai-storage", // 🔐 LocalStorage key
     }
   )
 );

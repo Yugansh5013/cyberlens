@@ -10,7 +10,7 @@ export default function DownloadReportButton({ file_id }: { file_id: string }) {
     setDownloading(true);
     try {
       const pdfBlob = await generateReport(file_id);
-      openPdfBlob(pdfBlob, `CyberLens_Report_${file_id}.pdf`);
+      openPdfBlob(pdfBlob, `SatyaSetu.AI_Report_${file_id}.pdf`);
     } catch (err) {
       console.error("❌ Failed to download report:", err);
       alert("Failed to generate report. Please try again.");
