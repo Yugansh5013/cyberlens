@@ -5,6 +5,7 @@ import { BarChart3, RefreshCw, AlertTriangle } from 'lucide-react';
 import ResearchExplanationCard from '@/components/fiscal/ResearchExplanationCard';
 import BenfordAnomalyGraph from '@/components/fiscal/BenfordAnomalyGraph';
 import InterpretationPanel from '@/components/fiscal/InterpretationPanel';
+import DualLanguageAudio from '@/components/DualLanguageAudio';
 import { Transaction } from '@/lib/benford';
 
 interface FiscalData {
@@ -82,6 +83,12 @@ export default function FiscalPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Dual Language Audio Instructions */}
+      <DualLanguageAudio 
+        englishSrc="/audio/fiscal-en.mp3"
+        hindiSrc="/audio/fiscal-hi.mp3"
+      />
+
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-12 md:py-16 px-4 md:px-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
