@@ -107,113 +107,8 @@ export default function HomePage() {
               </div>
             </motion.div>
           </div>
-
-          {/* Decorative Wave - Adjusted fill to match next section visual or keep transparent */}
-          <div className="absolute bottom-0 left-0 right-0 opacity-10">
-            <svg viewBox="0 0 1200 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-              <path d="M0 120L50 110C100 100 200 80 300 70C400 60 500 60 600 65C700 70 800 80 900 85C1000 90 1100 90 1150 90L1200 90V120H1150C1100 120 1000 120 900 120C800 120 700 120 600 120C500 120 400 120 300 120C200 120 100 120 50 120H0V120Z" fill="white" />
-            </svg>
-          </div>
         </section>
 
-        {/* Governance Modules - Primary Feature */}
-        <section id="governance-modules" className="py-20 px-6 scroll-mt-20">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-              className="text-center mb-16"
-            >
-              {/* Text color adjusted to slate-100 for dark background readability */}
-              <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-4">
-                Governance Intelligence Modules
-              </h2>
-              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                Statistical forensics and AI-powered anomaly detection for three critical governance domains
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            >
-              {governanceModules.map((module) => (
-                <motion.div key={module.href} variants={fadeInUp}>
-                  <Link href={module.href}>
-                    {/* Kept card white but added transparency option if preferred. Keeping solid for contrast */}
-                    <div className="group h-full bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border border-slate-200/50 hover:border-cyan-400 hover:-translate-y-2">
-                      <div className="flex justify-between items-start mb-6">
-                        <div className={`p-4 rounded-xl ${module.bgColor} ${module.textColor}`}>
-                          {module.icon}
-                        </div>
-                        <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-cyan-500 group-hover:translate-x-1 transition-all" />
-                      </div>
-
-                      <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-cyan-600 transition-colors">
-                        {module.title}
-                      </h3>
-
-                      <p className="text-slate-600 mb-4 leading-relaxed">
-                        {module.description}
-                      </p>
-
-                      <div className="flex items-center text-sm font-semibold text-cyan-600 group-hover:text-cyan-700">
-                        Open Dashboard
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Platform Capabilities */}
-        {/* Replaced solid bg-slate-900 with semi-transparent to see background */}
-        <section className="py-20 px-6 bg-slate-900/60 backdrop-blur-sm border-y border-slate-700/50 text-white">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-              className="text-center mb-16"
-            >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                Platform Capabilities
-              </h2>
-              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                Enterprise-grade forensics toolkit built for national-scale governance intelligence
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            >
-              {capabilities.map((capability) => (
-                <motion.div
-                  key={capability.title}
-                  variants={fadeInUp}
-                  className="bg-slate-800/60 backdrop-blur-md rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition-all duration-300"
-                >
-                  <div className="text-cyan-400 mb-4">{capability.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{capability.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{capability.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
 
         {/* AI Fraud Prediction Feature Highlight */}
         {/* Used a light semi-transparent background to ensure the dark text remains readable */}
@@ -340,6 +235,107 @@ export default function HomePage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Governance Modules - Primary Feature */}
+        <section id="governance-modules" className="py-20 px-6 scroll-mt-20">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="text-center mb-16"
+            >
+              {/* Text color adjusted to slate-100 for dark background readability */}
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-4">
+                Governance Intelligence Modules
+              </h2>
+              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+                Statistical forensics and AI-powered anomaly detection for three critical governance domains
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            >
+              {governanceModules.map((module) => (
+                <motion.div key={module.href} variants={fadeInUp}>
+                  <Link href={module.href}>
+                    {/* Kept card white but added transparency option if preferred. Keeping solid for contrast */}
+                    <div className="group h-full bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-8 border border-slate-200/50 hover:border-cyan-400 hover:-translate-y-2">
+                      <div className="flex justify-between items-start mb-6">
+                        <div className={`p-4 rounded-xl ${module.bgColor} ${module.textColor}`}>
+                          {module.icon}
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-cyan-500 group-hover:translate-x-1 transition-all" />
+                      </div>
+
+                      <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-cyan-600 transition-colors">
+                        {module.title}
+                      </h3>
+
+                      <p className="text-slate-600 mb-4 leading-relaxed">
+                        {module.description}
+                      </p>
+
+                      <div className="flex items-center text-sm font-semibold text-cyan-600 group-hover:text-cyan-700">
+                        Open Dashboard
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Platform Capabilities */}
+        {/* Replaced solid bg-slate-900 with semi-transparent to see background */}
+        <section className="py-20 px-6 bg-slate-900/60 backdrop-blur-sm border-y border-slate-700/50 text-white">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Platform Capabilities
+              </h2>
+              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+                Enterprise-grade forensics toolkit built for national-scale governance intelligence
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {capabilities.map((capability) => (
+                <motion.div
+                  key={capability.title}
+                  variants={fadeInUp}
+                  className="bg-slate-800/60 backdrop-blur-md rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition-all duration-300"
+                >
+                  <div className="text-cyan-400 mb-4">{capability.icon}</div>
+                  <h3 className="text-xl font-semibold mb-2">{capability.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">{capability.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+
 
         {/* Who It's For */}
         <section className="py-20 px-6">
