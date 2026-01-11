@@ -1,0 +1,36 @@
+{
+  "file_id": "00b39d62-c77c-44e2-9f89-5bc7599606ab.png",
+  "raw_text": "",
+  "entities": [],
+  "scam_class": {
+    "category": "Unclassified",
+    "confidence": 0.0,
+    "keywords": []
+  },
+  "osint_hits": [],
+  "risk": {
+    "score": 0.05,
+    "risk_level": "LOW 🟢",
+    "rationale": "No major fraud indicators found.",
+    "timestamp": "2026-01-04T19:59:26.016262",
+    "entity_details": [],
+    "factors": {
+      "scam_confidence": 0.0,
+      "avg_entity_risk": 0,
+      "keyword_toxicity": 0.0,
+      "tone_score": 0.0,
+      "sentiment_neutrality": 1.0,
+      "osint_weight": 0
+    },
+    "scam_type": "Unclassified"
+  },
+  "url_qr_findings": [],
+  "url_summary": {
+    "total_urls_scanned": 0,
+    "high_risk": 0,
+    "medium_risk": 0,
+    "low_risk": 0,
+    "top_high_risk_domains": []
+  },
+  "analyzed_at": "2026-01-04 19:59:26"
+}
