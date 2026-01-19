@@ -312,7 +312,7 @@ model = XGBRegressor(
 
 ## 👥 Team
 
-**Hack4Delhi 2026** — Building AI for transparent governance
+**Escape Da Vinci** — Building AI for transparent governance
 
 ---
 
